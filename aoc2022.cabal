@@ -10,7 +10,7 @@ homepage:       https://github.com/mstksg/advent-of-code-2022#readme
 bug-reports:    https://github.com/mstksg/advent-of-code-2022/issues
 author:         Justin Le
 maintainer:     justin@jle.im
-copyright:      (c) Justin Le 2021
+copyright:      (c) Justin Le 2022
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
