@@ -68,6 +68,7 @@ common common-options
                      , profunctors
                      , psqueues
                      , recursion-schemes
+                     , safe
                      , semigroupoids
                      , split
                      , strict-tuple

@@ -34,7 +34,6 @@ import           Data.Bifunctor            as P
 import           Data.Char                 as P
 import           Data.Coerce               as P
 import           Data.Containers.ListUtils as P
-import           Data.List                 as P
 import           Data.Either               as P
 import           Data.Finite               as P (Finite, packFinite, getFinite, modulo, finites)
 import           Data.Foldable             as P
@@ -45,6 +44,7 @@ import           Data.IntMap.NonEmpty      as P (NEIntMap)
 import           Data.IntSet               as P (IntSet)
 import           Data.IntSet.NonEmpty      as P (NEIntSet)
 import           Data.Kind                 as P
+import           Data.List                 as P
 import           Data.List.NonEmpty        as P (NonEmpty(..), nonEmpty)
 import           Data.List.Split           as P
 import           Data.Map                  as P (Map)
@@ -63,5 +63,7 @@ import           Data.Void                 as P
 import           Debug.Trace               as P
 import           GHC.Generics              as P (Generic)
 import           Numeric.Natural           as P
+import           Safe.Exact                as P
+import           Safe.Foldable             as P
 import           Text.Printf               as P
 import           Text.Read                 as P (readMaybe)
