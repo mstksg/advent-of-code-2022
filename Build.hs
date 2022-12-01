@@ -73,7 +73,8 @@ main :: IO ()
 main = shakeArgs opts $ do
     action $ do
       rd <- S.toList <$> reflectionDays
-      need $ ["README.md", "reflections.md", "feed.xml"]
+      need $ ["README.md", "reflections.md"]
+      -- need $ ["README.md", "reflections.md", "feed.xml"]
           ++ map standaloneReflectionPath rd
 
     "reflections.md" %> \fp -> do
