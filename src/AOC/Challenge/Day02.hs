@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day02 (
-    -- day02a
-  -- , day02b
+    day02a
+  , day02b
   ) where
 
 import           AOC.Prelude
@@ -45,16 +45,65 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+data Throw = Rock | Paper | Scissors
+  deriving (Show, Eq, Generic)
+
+instance NFData Throw
+
+matchLetter 'A' = Rock
+matchLetter 'B' = Paper
+matchLetter 'C' = Scissors
+matchLetter 'X' = Rock
+matchLetter 'Y' = Paper
+matchLetter 'Z' = Scissors
+
+data Result = Lose | Draw | Win
+  deriving (Show, Eq, Generic)
+
+instance NFData Result
+
+matchResult 'X' = Lose
+matchResult 'Y' = Draw
+matchResult 'Z' = Win
+
+
+scoreMatch x y = sbase y + smatch x y
+  where
+    sbase = \case
+      Rock -> 1
+      Paper -> 2
+      Scissors -> 3
+
+    smatch Rock Rock = 3
+    smatch Rock Paper = 6
+    smatch Rock Scissors = 0
+    smatch Paper Rock = 0
+    smatch Paper Paper = 3
+    smatch Paper Scissors = 6
+    smatch Scissors Rock = 6
+    smatch Scissors Paper = 0
+    smatch Scissors Scissors = 3
+
 day02a :: _ :~> _
 day02a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . map (\[a,_,b] -> (matchLetter a,matchLetter b)) . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . sum . map (uncurry scoreMatch)
     }
 
 day02b :: _ :~> _
 day02b = MkSol
-    { sParse = sParse day02a
+    { sParse = Just . map (\[a,_,b] -> (matchLetter a,matchResult b)) . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . sum . map (uncurry go)
     }
+  where
+    go Rock Lose = scoreMatch Rock Scissors
+    go Rock Draw = scoreMatch Rock Rock
+    go Rock Win = scoreMatch Rock Paper
+    go Paper Lose = scoreMatch Paper Rock
+    go Paper Draw = scoreMatch Paper Paper
+    go Paper Win = scoreMatch Paper Scissors
+    go Scissors Lose = scoreMatch Scissors Paper
+    go Scissors Draw = scoreMatch Scissors Scissors
+    go Scissors Win = scoreMatch Scissors Rock
