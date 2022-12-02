@@ -22,11 +22,11 @@ play shapeScore outcomeScore = sum . map go
 
 There is a bit of cute symmetry between `shapeScore` and `outcomeScore` for the
 two parts.  Not sure if it represents anything meaningful though!  I mostly
-just figured it out by using trial and error and taking advantage that there
-are only so many ways you can combine two modulo 3 numbers.
+just figured it out by using trial and error and taking advantage of the fact
+that there are only so many ways you can combine two modulo 3 numbers.
 
 ```haskell
 part1, part2 :: [(Z3, Z3)] -> Integer
-part1 = play (\_ y -> y) (\x y -> y + (1 - x))
+part1 = play (\_ y -> y)           (\x y -> y + (1 - x))
 part2 = play (\x y -> y - (1 - x)) (\_ y -> y)
 ```
