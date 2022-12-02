@@ -30,32 +30,28 @@ matchLetter = \case
     'Z' -> Just 2
     _   -> Nothing
 
+scoreMatches
+    :: (Z3 -> Z3 -> Z3)  -- ^ Get shape score
+    -> (Z3 -> Z3 -> Z3)  -- ^ Get outcome score
+    -> [(Z3, Z3)]
+    -> Integer
+scoreMatches f g = sum . map go
+  where
+   go (x, y) = getFinite (f x y) + getFinite (g x y) * 3 + 1
+
 parseLine :: String -> Maybe (Z3, Z3)
 parseLine = listTup . mapMaybe matchLetter
-
-scoreMatch :: Z3 -> Z3 -> Integer
-scoreMatch x y = baseScore + matchScore
-  where
-    baseScore  = getFinite y + 1
-    matchScore = getFinite (y - x + 1) * 3
 
 day02a :: [(Z3, Z3)] :~> Integer
 day02a = MkSol
     { sParse = traverse parseLine . lines
     , sShow  = show
-    , sSolve = Just . sum . map (uncurry scoreMatch)
+    , sSolve = Just . scoreMatches (\_ y -> y) (\x y -> y - x + 1)
     }
-
--- y becomes x + y + 2 in scoreMatch
-scoreMatch2 :: Z3 -> Z3 -> Integer
-scoreMatch2 x y = baseScore + matchScore
-  where
-    baseScore  = getFinite (x + y + 2) + 1
-    matchScore = getFinite y * 3
 
 day02b :: [(Z3, Z3)] :~> Integer
 day02b = MkSol
     { sParse = traverse parseLine . lines
     , sShow  = show
-    , sSolve = Just . sum . map (uncurry scoreMatch2)
+    , sSolve = Just . scoreMatches (\x y -> x + y + 2) (\_ y -> y)
     }
