@@ -34,15 +34,15 @@ day02
     :: (Z3 -> Z3 -> Z3)  -- ^ Get shape score
     -> (Z3 -> Z3 -> Z3)  -- ^ Get outcome score
     -> [(Z3, Z3)] :~> Integer
-day02 f g = MkSol
+day02 shapeScore outcomeScore = MkSol
     { sParse = traverse parseLine . lines
     , sShow  = show
     , sSolve = Just . sum . map go
     }
   where
     parseLine = listTup . mapMaybe matchLetter
-    go (x, y) = getFinite (f x y) + getFinite (g x y) * 3 + 1
-
+    go (x, y) = getFinite (shapeScore x y) + 1
+              + getFinite (outcomeScore x y) * 3
 
 day02a :: [(Z3, Z3)] :~> Integer
 day02a = day02 (\_ y -> y) (\x y -> y + (1 - x))
