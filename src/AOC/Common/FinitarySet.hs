@@ -67,7 +67,7 @@ toList :: Finitary a => FinitarySet a -> [a]
 toList = foldr (:) []
 {-# INLINE toList #-}
 
-length :: Finitary a => FinitarySet a -> Int
+length :: FinitarySet a -> Int
 length (FinitarySet xs) = V.foldl' (\i (Bit x) -> if x then i P.+ 1 else i) 0 xs
 {-# INLINE length #-}
 

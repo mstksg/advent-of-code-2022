@@ -51,8 +51,8 @@ module AOC.Common.Point (
   , displayAsciiMap
   , displayAsciiSet
   -- ** OCR
-  , parseLetters
-  , parseLettersSafe
+  -- , parseLetters
+  -- , parseLettersSafe
   -- * Util
   , centeredFinite
   ) where
@@ -70,7 +70,7 @@ import           Data.Hashable
 import           Data.List.NonEmpty      (NonEmpty(..))
 import           Data.Map                (Map)
 import           Data.Map.Lens
-import           Data.Maybe
+-- import           Data.Maybe
 import           Data.MemoCombinators    (Memo)
 import           Data.Monoid
 import           Data.Ord
@@ -85,7 +85,7 @@ import           Data.Tuple.Strict
 import           GHC.Generics
 import           GHC.TypeNats
 import           Linear
-import qualified Advent.OCR              as OCR
+-- import qualified Advent.OCR              as OCR
 import qualified Control.Foldl           as F
 import qualified Data.List.NonEmpty      as NE
 import qualified Data.Map                as M
@@ -434,15 +434,15 @@ displayAsciiSet
     -> String
 displayAsciiSet x y = displayAsciiMap x . M.fromSet (const y)
 
-parseLetters
-    :: Set Point
-    -> String
-parseLetters = fromMaybe (error "parseLetters: no parse") . parseLettersSafe
+-- parseLetters
+--     :: Set Point
+--     -> String
+-- parseLetters = fromMaybe (error "parseLetters: no parse") . parseLettersSafe
 
-parseLettersSafe
-    :: Set Point
-    -> Maybe String
-parseLettersSafe = OCR.parseLettersWith (view _x) (view _y)
+-- parseLettersSafe
+--     :: Set Point
+--     -> Maybe String
+-- parseLettersSafe = OCR.parseLettersWith (view _x) (view _y)
 
 -- | Lattice points for line between points, not including endpoints
 lineTo :: Point -> Point -> [Point]
