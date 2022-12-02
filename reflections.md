@@ -23,6 +23,7 @@ Table of Contents
 -----------------
 
 * [Day 1](#day-1)
+* [Day 2](#day-2) *(no reflection yet)*
 
 Day 1
 ------
@@ -88,6 +89,50 @@ time                 230.3 μs   (220.7 μs .. 243.6 μs)
 mean                 263.8 μs   (251.5 μs .. 279.3 μs)
 std dev              47.28 μs   (36.51 μs .. 56.97 μs)
 variance introduced by outliers: 92% (severely inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 2
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day02.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d02p]* / *[Code][d02g]* / *[Rendered][d02h]* / *[Standalone Reflection Page][d02r]*
+
+[d02p]: https://adventofcode.com/2022/day/2
+[d02g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day02.hs
+[d02h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day02.html
+[d02r]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day02.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 2 Benchmarks
+
+```
+>> Day 02a
+benchmarking...
+time                 346.2 μs   (339.3 μs .. 355.3 μs)
+                     0.992 R²   (0.983 R² .. 0.997 R²)
+mean                 355.9 μs   (346.8 μs .. 371.2 μs)
+std dev              38.09 μs   (21.64 μs .. 62.81 μs)
+variance introduced by outliers: 80% (severely inflated)
+
+* parsing and formatting times excluded
+
+>> Day 02b
+benchmarking...
+time                 529.4 μs   (515.9 μs .. 542.6 μs)
+                     0.993 R²   (0.989 R² .. 0.996 R²)
+mean                 524.0 μs   (513.0 μs .. 536.6 μs)
+std dev              39.80 μs   (34.98 μs .. 47.59 μs)
+variance introduced by outliers: 65% (severely inflated)
 
 * parsing and formatting times excluded
 ```
