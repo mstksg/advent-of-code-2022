@@ -45,7 +45,7 @@ day02 f g = MkSol
 
 
 day02a :: [(Z3, Z3)] :~> Integer
-day02a = day02 (\_ y -> y) (\x y -> y - x + 1)
+day02a = day02 (\_ y -> y) (\x y -> y + (1 - x))
 
 day02b :: [(Z3, Z3)] :~> Integer
-day02b = day02 (\x y -> x + y + 2) (\_ y -> y)
+day02b = day02 (\x y -> y - (1 - x)) (\_ y -> y)
