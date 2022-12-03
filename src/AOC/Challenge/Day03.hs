@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day03 (
-    -- day03a
-  -- , day03b
+    day03a
+  , day03b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,29 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day03a :: _ :~> _
 day03a = MkSol
-    { sParse = Just . lines
+    { sParse = Just .map splitter . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . sum . map go
     }
+  where
+    splitter xs = splitAt (length xs `div` 2) xs
+    go (xs, ys) = f . charFinite $ head $ S.toList $ S.intersection (S.fromList xs) (S.fromList ys)
+      where
+        f (Just (False, x)) = getFinite x + 1
+        f (Just (True, x)) = getFinite x + 1 + 26
+
+
+
 
 day03b :: _ :~> _
 day03b = MkSol
-    { sParse = sParse day03a
+    { sParse = Just . chunksOf 3 . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . sum . map go
     }
+  where
+    splitter xs = splitAt (length xs `div` 2) xs
+    go [xs, ys, zs] = f . charFinite $ head $ S.toList $ S.intersection (S.fromList zs) $ S.intersection (S.fromList xs) (S.fromList ys)
+      where
+        f (Just (False, x)) = getFinite x + 1
+        f (Just (True, x)) = getFinite x + 1 + 26
