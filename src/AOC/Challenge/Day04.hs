@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day04 (
-    -- day04a
-  -- , day04b
+    day04a
+  , day04b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,18 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day04a :: _ :~> _
 day04a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . map (fromJust . listTup . map (fromJust . listTup . map (read @Int) . splitOn "-") . splitOn ",") . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . countTrue go
     }
+  where
+    go ((a,b), (x,y)) = (a <= x && b >= y) || (x <= a && y >= b)
 
 day04b :: _ :~> _
 day04b = MkSol
     { sParse = sParse day04a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . countTrue go
     }
+  where
+    go ((a,b), (x,y)) = not $ S.null $ S.intersection (S.fromList [a..b]) (S.fromList [x..y]) 
