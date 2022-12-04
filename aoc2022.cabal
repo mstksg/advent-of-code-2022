@@ -37,10 +37,12 @@ common common-options
                      , containers
                      , criterion
                      , data-default-class
+                     , data-interval
                      , data-memocombinators
                      , deepseq
                      , dependent-sum
                      , directory
+                     , extended-reals
                      , fgl
                      , filepath
                      , fin
