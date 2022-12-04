@@ -4,7 +4,7 @@
   <channel>
     <title>${name}'s Advent of Code ${year} Reflections</title>
     <description>Reflections for my Advent of Code solutions as I try to solve them all in fun ways using Haskell!</description>
-    <link>https://github.com/${github}/advent-of-code-${year}/blob/master/reflections.md</link>
+    <link>https://github.com/${github}/advent-of-code-${year}/blob/main/reflections.md</link>
     <copyright>Copyright ${year} ${name}</copyright>
     <language>en-us</language>
     <lastBuildDate>${time}</lastBuildDate>

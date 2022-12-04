@@ -70,7 +70,7 @@ documentation.  Haddock source renders have hyperlinked identifiers,
 so you can follow any unrecognized identifiers to see where I have defined them
 in the library.
 
-[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections.md
+[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections.md
 
 ### `:~>` type
 
@@ -116,7 +116,7 @@ had a total distance of less than 32.  So, I have a system that lets me write
 `10000` would be replaced by `32` when running with test data (which is parsed
 from [this file][7btest])
 
-[7btest]: https://github.com/mstksg/advent-of-code-2018/blob/master/test-data/06b.txt
+[7btest]: https://github.com/mstksg/advent-of-code-2018/blob/main/test-data/06b.txt
 
 Interactive
 -----------

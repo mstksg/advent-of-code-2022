@@ -9,7 +9,7 @@ that file instead!
 
 *[all][reflections]* / *1* / *[2][day02]* / *[3][day03]* / *[4][day04]*
 
-[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections.md
+[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections.md
 [day02]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day02.md
 [day03]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day03.md
 [day04]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day04.md
@@ -21,7 +21,7 @@ that file instead!
 *[Prompt][d01p]* / *[Code][d01g]* / *[Rendered][d01h]*
 
 [d01p]: https://adventofcode.com/2022/day/1
-[d01g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day01.hs
+[d01g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day01.hs
 [d01h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day01.html
 
 Day 1's are usually pretty good for Haskell's stream processing, and this is no

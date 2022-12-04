@@ -9,7 +9,7 @@ that file instead!
 
 *[all][reflections]* / *[1][day01]* / *[2][day02]* / *[3][day03]* / *4*
 
-[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections.md
+[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections.md
 [day01]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day01.md
 [day02]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day02.md
 [day03]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day03.md
@@ -21,7 +21,7 @@ that file instead!
 *[Prompt][d04p]* / *[Code][d04g]* / *[Rendered][d04h]*
 
 [d04p]: https://adventofcode.com/2022/day/4
-[d04g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day04.hs
+[d04g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day04.hs
 [d04h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day04.html
 
 A bit of fun number crunching :)  Here is a chance to leverage an interval

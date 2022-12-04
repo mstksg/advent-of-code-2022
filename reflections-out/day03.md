@@ -9,7 +9,7 @@ that file instead!
 
 *[all][reflections]* / *[1][day01]* / *[2][day02]* / *3* / *[4][day04]*
 
-[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections.md
+[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections.md
 [day01]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day01.md
 [day02]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day02.md
 [day04]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day04.md
@@ -21,7 +21,7 @@ that file instead!
 *[Prompt][d03p]* / *[Code][d03g]* / *[Rendered][d03h]*
 
 [d03p]: https://adventofcode.com/2022/day/3
-[d03g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day03.hs
+[d03g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day03.hs
 [d03h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day03.html
 
 Some more "string" processing!  First, let's assume that we receive a list of

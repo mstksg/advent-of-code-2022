@@ -10,9 +10,9 @@ that file instead!
 *[Prompt][d${daylong}p]* / *[Code][d${daylong}g]* / *[Rendered][d${daylong}h]* / *[Standalone Reflection Page][d${daylong}r]*
 
 [d${daylong}p]: https://adventofcode.com/${year}/day/${dayshort}
-[d${daylong}g]: https://github.com/${github}/advent-of-code-${year}/blob/master/src/AOC/Challenge/Day${daylong}.hs
+[d${daylong}g]: https://github.com/${github}/advent-of-code-${year}/blob/main/src/AOC/Challenge/Day${daylong}.hs
 [d${daylong}h]: https://${github}.github.io/advent-of-code-${year}/src/AOC.Challenge.Day${daylong}.html
-[d${daylong}r]: https://github.com/${github}/advent-of-code-${year}/blob/master/reflections-out/day${daylong}.md
+[d${daylong}r]: https://github.com/${github}/advent-of-code-${year}/blob/main/reflections-out/day${daylong}.md
 
 ${body}
 

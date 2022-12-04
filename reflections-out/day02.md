@@ -9,7 +9,7 @@ that file instead!
 
 *[all][reflections]* / *[1][day01]* / *2* / *[3][day03]* / *[4][day04]*
 
-[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections.md
+[reflections]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections.md
 [day01]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day01.md
 [day03]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day03.md
 [day04]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day04.md
@@ -21,7 +21,7 @@ that file instead!
 *[Prompt][d02p]* / *[Code][d02g]* / *[Rendered][d02h]*
 
 [d02p]: https://adventofcode.com/2022/day/2
-[d02g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day02.hs
+[d02g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day02.hs
 [d02h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day02.html
 
 There's a nice straightforward way to do this by just matching up all 9

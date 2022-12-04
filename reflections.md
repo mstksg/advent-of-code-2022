@@ -39,9 +39,9 @@ that file instead!
 *[Prompt][d01p]* / *[Code][d01g]* / *[Rendered][d01h]* / *[Standalone Reflection Page][d01r]*
 
 [d01p]: https://adventofcode.com/2022/day/1
-[d01g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day01.hs
+[d01g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day01.hs
 [d01h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day01.html
-[d01r]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day01.md
+[d01r]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections-out/day01.md
 
 Day 1's are usually pretty good for Haskell's stream processing, and this is no
 exception :)
@@ -109,9 +109,9 @@ that file instead!
 *[Prompt][d02p]* / *[Code][d02g]* / *[Rendered][d02h]* / *[Standalone Reflection Page][d02r]*
 
 [d02p]: https://adventofcode.com/2022/day/2
-[d02g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day02.hs
+[d02g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day02.hs
 [d02h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day02.html
-[d02r]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day02.md
+[d02r]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections-out/day02.md
 
 There's a nice straightforward way to do this by just matching up all 9
 combinations, but I had a bit of fun doing it algebraically using `Finite 3`, a
@@ -198,9 +198,9 @@ that file instead!
 *[Prompt][d03p]* / *[Code][d03g]* / *[Rendered][d03h]* / *[Standalone Reflection Page][d03r]*
 
 [d03p]: https://adventofcode.com/2022/day/3
-[d03g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day03.hs
+[d03g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day03.hs
 [d03h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day03.html
-[d03r]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day03.md
+[d03r]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections-out/day03.md
 
 Some more "string" processing!  First, let's assume that we receive a list of
 priority sequences instead of a list of character strings.  Both of these parts
@@ -265,9 +265,9 @@ that file instead!
 *[Prompt][d04p]* / *[Code][d04g]* / *[Rendered][d04h]* / *[Standalone Reflection Page][d04r]*
 
 [d04p]: https://adventofcode.com/2022/day/4
-[d04g]: https://github.com/mstksg/advent-of-code-2022/blob/master/src/AOC/Challenge/Day04.hs
+[d04g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day04.hs
 [d04h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day04.html
-[d04r]: https://github.com/mstksg/advent-of-code-2022/blob/master/reflections-out/day04.md
+[d04r]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections-out/day04.md
 
 A bit of fun number crunching :)  Here is a chance to leverage an interval
 library, like haskell's
