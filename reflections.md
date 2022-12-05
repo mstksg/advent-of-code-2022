@@ -26,6 +26,7 @@ Table of Contents
 * [Day 2](#day-2)
 * [Day 3](#day-3)
 * [Day 4](#day-4)
+* [Day 5](#day-5) *(no reflection yet)*
 
 Day 1
 ------
@@ -308,6 +309,50 @@ time                 56.35 μs   (54.69 μs .. 57.86 μs)
 mean                 55.18 μs   (54.13 μs .. 56.75 μs)
 std dev              4.232 μs   (3.144 μs .. 6.017 μs)
 variance introduced by outliers: 74% (severely inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 5
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day05.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d05p]* / *[Code][d05g]* / *[Rendered][d05h]* / *[Standalone Reflection Page][d05r]*
+
+[d05p]: https://adventofcode.com/2022/day/5
+[d05g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day05.hs
+[d05h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day05.html
+[d05r]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections-out/day05.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 5 Benchmarks
+
+```
+>> Day 05a
+benchmarking...
+time                 328.8 μs   (321.6 μs .. 337.5 μs)
+                     0.995 R²   (0.993 R² .. 0.998 R²)
+mean                 332.9 μs   (327.8 μs .. 341.7 μs)
+std dev              25.87 μs   (20.10 μs .. 33.16 μs)
+variance introduced by outliers: 68% (severely inflated)
+
+* parsing and formatting times excluded
+
+>> Day 05b
+benchmarking...
+time                 747.5 μs   (738.2 μs .. 757.8 μs)
+                     0.998 R²   (0.997 R² .. 0.999 R²)
+mean                 751.1 μs   (743.2 μs .. 757.9 μs)
+std dev              26.50 μs   (21.01 μs .. 31.93 μs)
+variance introduced by outliers: 26% (moderately inflated)
 
 * parsing and formatting times excluded
 ```

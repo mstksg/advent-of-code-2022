@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 -- |
 -- Module      : AOC.Challenge.Day05
 -- License     : BSD3
@@ -9,43 +6,26 @@
 -- Portability : non-portable
 --
 -- Day 5.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day05 (
     day05a
   , day05b
   ) where
 
-import           AOC.Prelude
-
-import qualified Data.Graph.Inductive           as G
-import qualified Data.IntMap                    as IM
-import qualified Data.IntSet                    as IS
-import qualified Data.List.NonEmpty             as NE
-import qualified Data.List.PointedList          as PL
-import qualified Data.List.PointedList.Circular as PLC
-import qualified Data.Map                       as M
-import qualified Data.OrdPSQ                    as PSQ
-import qualified Data.Sequence                  as Seq
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Data.Vector                    as V
-import qualified Linear                         as L
+import           AOC.Common (clearOut, listV3, listTup)
+import           AOC.Solver ((:~>)(..))
+import           Control.DeepSeq (NFData)
+import           Control.Monad ((<=<))
 import           Data.Bitraversable (bitraverse)
-import qualified Text.Megaparsec                as P
-import qualified Text.Megaparsec.Char           as P
-import qualified Text.Megaparsec.Char.Lexer     as PP
-
+import           Data.Char (isDigit, isLetter)
+import           Data.IntMap (IntMap)
+import           Data.List (foldl', transpose)
+import           Data.List.Split (splitOn)
+import           GHC.Generics (Generic)
+import           Linear.V3 (V3(..))
+import           Safe.Exact (takeExactMay)
+import           Text.Read (readMaybe)
+import qualified Data.IntMap                    as IM
 
 data Instr = Instr { amount :: !Int, source :: !Int, dest :: !Int }
   deriving stock (Eq, Show, Generic)
@@ -55,10 +35,10 @@ instance NFData Instr
 parseInput
     :: String
     -> Maybe (IntMap [Char], [Instr])
-parseInput = bitraverse (parseGrid . lines) (parseInstr . lines)
+parseInput = bitraverse (Just . parseGrid . lines) (parseInstr . lines)
          <=< listTup . splitOn "\n\n"
   where
-    parseGrid  = Just . IM.fromList . zip [1..]
+    parseGrid  = IM.fromList . zip [1..]
                . filter (not . null) . map (filter isLetter)
                . transpose
     parseInstr = traverse $
@@ -79,32 +59,25 @@ runInstr f stacks (Instr{..}) = IM.fromList [(source, xs'), (dest, ys')] `IM.uni
     ys = stacks IM.! dest
     (xs', ys') = f amount xs ys
 
-day05a :: _ :~> _
-day05a = MkSol
+day05 
+    :: (Int -> [Char] -> [Char] -> ([Char], [Char]))
+    -> (IntMap [Char], [Instr]) :~> String
+day05 shifter = MkSol
     { sParse = parseInput
     , sShow  = id
     , sSolve = \(stacks, instrs) ->
-          traverse listToMaybe
-        . toList
-        $ foldl' (runInstr shiftItems) stacks instrs
+          foldMap (takeExactMay 1)
+        $ foldl' (runInstr shifter) stacks instrs
     }
+
+day05a :: (IntMap [Char], [Instr]) :~> String
+day05a = day05 shiftItems
   where
-    shiftItems :: Int -> [a] -> [a] -> ([a],[a])
     shiftItems 0 xs    ys  = (xs, ys)
     shiftItems _ []    ys  = ([], ys)
     shiftItems n (x:xs) ys = shiftItems (n-1) xs (x:ys)
 
-day05b :: _ :~> _
-day05b = MkSol
-    { sParse = sParse day05a
-    , sShow  = id
-    , sSolve = \(stacks, instrs) ->
-          traverse listToMaybe
-        . toList
-        $ foldl' (runInstr shiftItems) stacks instrs
-    }
-  where
-    shiftItems :: Int -> [a] -> [a] -> ([a],[a])
-    shiftItems n xs ys  = (xs', zs ++ ys)
-      where
-        (zs,xs') = splitAt n xs
+day05b :: (IntMap [Char], [Instr]) :~> String
+day05b = day05 \n xs ys ->
+    let (zs,xs') = splitAt n xs
+    in  (xs', zs ++ ys)
