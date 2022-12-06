@@ -34,6 +34,8 @@ module AOC.Common (
   , scanrT
   , firstRepeated
   , firstRepeatedBy
+  , firstRepeatedFinitary
+  , firstRepeatedByFinitary
   , fixedPoint
   , floodFill
   , floodFillCount
@@ -148,8 +150,10 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.ST
 import           Control.Monad.State
+import           Control.Monad.Trans.Except
 import           Control.Parallel.Strategies
 import           Data.Bifunctor
+import           Data.Bit
 import           Data.Char
 import           Data.Coerce
 import           Data.Finite
@@ -198,6 +202,7 @@ import qualified Data.Vector.Algorithms.Intro       as VAI
 import qualified Data.Vector.Generic                as VG
 import qualified Data.Vector.Generic.Sized          as SVG
 import qualified Data.Vector.Generic.Sized.Internal as SVG
+import qualified Data.Vector.Unboxed.Mutable.Sized          as UVM
 import qualified Numeric.Lens                       as L
 import qualified Text.Megaparsec                    as P
 import qualified Text.Megaparsec.Char               as P
@@ -303,6 +308,22 @@ firstRepeatedBy f = go S.empty
       | otherwise           = go (f x `S.insert` seen) xs
     go _ []     = Nothing
 
+-- | firstRepeated but with a bitset
+firstRepeatedFinitary :: F.Finitary a => [a] -> Maybe a
+firstRepeatedFinitary = firstRepeatedByFinitary id
+
+-- | firstRepeatedBy but with a bitset
+firstRepeatedByFinitary :: F.Finitary a => (b -> a) -> [b] -> Maybe b
+firstRepeatedByFinitary f xs = runST do
+    seen <- UVM.replicate (Bit False)
+    res  <- runExceptT $ forM_ xs $ \i -> do
+      let ixf = F.toFinite (f i)
+      Bit found <- seen `UVM.read` ixf
+      when found $ throwE i
+      UVM.write seen ixf (Bit True)
+    pure case res of
+      Left x  -> Just x
+      Right _ -> Nothing
 
 -- | Repeat a function until you get the same result twice.
 fixedPoint :: Eq a => (a -> a) -> a -> a

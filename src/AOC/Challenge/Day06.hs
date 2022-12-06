@@ -13,23 +13,24 @@ module AOC.Challenge.Day06 (
   ) where
 
 
-import           AOC.Common (firstRepeated, slidingWindows)
+import           AOC.Common (firstRepeatedFinitary, slidingWindows, charFinite)
 import           AOC.Solver ((:~>)(..))
+import           Data.Finite
 import           Data.Foldable (toList)
 import           Data.List (findIndex)
-import           Data.Maybe (isNothing)
+import           Data.Maybe (isNothing, mapMaybe)
 
-day06 :: Int -> String :~> Int
+day06 :: Int -> [Finite 26] :~> Int
 day06 n = MkSol
-    { sParse = Just
+    { sParse = Just . map snd . mapMaybe charFinite
     , sShow  = show
     , sSolve = fmap (+ n)
-             . findIndex (isNothing . firstRepeated . toList)
+             . findIndex (isNothing . firstRepeatedFinitary . toList)
              . slidingWindows n
     }
 
-day06a :: String :~> Int
+day06a :: [Finite 26] :~> Int
 day06a = day06 4
 
-day06b :: String :~> Int
+day06b :: [Finite 26] :~> Int
 day06b = day06 14
