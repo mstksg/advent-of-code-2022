@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day06 (
-    -- day06a
-  -- , day06b
+    day06a
+  , day06b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,16 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day06a :: _ :~> _
 day06a = MkSol
-    { sParse = Just . lines
+    { sParse = \xs -> Just $
+            transpose [xs, drop 1 xs, drop 2 xs, drop 3 xs]
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . (+ 4) . length . takeWhile ((/= 4) . S.size  . S.fromList)
     }
 
 day06b :: _ :~> _
 day06b = MkSol
-    { sParse = sParse day06a
+    { sParse = \xs -> Just $
+            transpose $ zipWith drop [0..13] (repeat xs)
     , sShow  = show
-    , sSolve = Just
+    , sSolve = Just . (+ 14) . length . takeWhile ((/= 14) . S.size  . S.fromList)
     }
