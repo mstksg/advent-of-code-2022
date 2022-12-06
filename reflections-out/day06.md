@@ -72,21 +72,21 @@ part2 = solve 14
 ```
 >> Day 06a
 benchmarking...
-time                 971.8 μs   (919.8 μs .. 1.050 ms)
-                     0.968 R²   (0.935 R² .. 0.994 R²)
-mean                 955.3 μs   (930.7 μs .. 998.0 μs)
-std dev              112.3 μs   (73.55 μs .. 182.3 μs)
-variance introduced by outliers: 79% (severely inflated)
+time                 1.105 ms   (1.049 ms .. 1.175 ms)
+                     0.979 R²   (0.967 R² .. 0.991 R²)
+mean                 1.142 ms   (1.103 ms .. 1.177 ms)
+std dev              130.6 μs   (114.9 μs .. 155.8 μs)
+variance introduced by outliers: 77% (severely inflated)
 
 * parsing and formatting times excluded
 
 >> Day 06b
 benchmarking...
-time                 5.225 ms   (4.963 ms .. 5.542 ms)
-                     0.981 R²   (0.969 R² .. 0.989 R²)
-mean                 4.659 ms   (4.495 ms .. 4.857 ms)
-std dev              536.0 μs   (473.9 μs .. 641.7 μs)
-variance introduced by outliers: 68% (severely inflated)
+time                 1.684 ms   (1.584 ms .. 1.779 ms)
+                     0.973 R²   (0.960 R² .. 0.987 R²)
+mean                 1.803 ms   (1.730 ms .. 1.870 ms)
+std dev              264.0 μs   (226.6 μs .. 293.8 μs)
+variance introduced by outliers: 84% (severely inflated)
 
 * parsing and formatting times excluded
 ```
