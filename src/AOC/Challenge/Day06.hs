@@ -14,17 +14,17 @@ module AOC.Challenge.Day06 (
 
 
 import           AOC.Solver ((:~>)(..))
-import           Data.List (transpose)
+import           Data.List (transpose, findIndex)
 import qualified Data.Set as S
 
 day06 :: Int -> String :~> Int
 day06 n = MkSol
     { sParse = Just
     , sShow  = show
-    , sSolve = Just . solve
+    , sSolve = solve
     }
   where
-    solve xs = length (takeWhile ((< n) . S.size . S.fromList) chunks) + n
+    solve xs = (+ n) <$> findIndex ((== n) . S.size . S.fromList) chunks
       where
         chunks = transpose $ map (`drop` xs) [0..n-1]
 
