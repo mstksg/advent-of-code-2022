@@ -12,10 +12,9 @@ module AOC.Challenge.Day06 (
   , day06b
   ) where
 
-
 import           AOC.Common (firstRepeatedFinitary, slidingWindows, charFinite)
 import           AOC.Solver ((:~>)(..))
-import           Data.Finite
+import           Data.Finite (Finite)
 import           Data.Foldable (toList)
 import           Data.List (findIndex)
 import           Data.Maybe (isNothing, mapMaybe)
