@@ -12,12 +12,10 @@ module AOC.Challenge.Day07 (
   , day07b
   ) where
 
-import           AOC.Common (firstJust)
 import           AOC.Solver ((:~>)(..))
 import           Control.DeepSeq (NFData)
-import           Control.Monad (guard)
 import           Data.Foldable (toList)
-import           Data.List (sort, tails, foldl')
+import           Data.List (sort, tails, foldl', find)
 import           Data.Map (Map)
 import           Data.Maybe (mapMaybe)
 import           Data.Tuple.Strict (T2(..), ssnd)
@@ -66,7 +64,5 @@ day07b = MkSol
     , sSolve = \xs ->
         let sizes     = buildSizes xs
             totalSize = sizes M.! []
-        in  firstJust (go totalSize) $ sort (toList sizes)
+        in  find (\s -> (totalSize - s) <= 70000000 ) $ sort (toList sizes)
     }
-  where
-    go tot i = i <$ guard (tot - i <= (70000000 - 30000000))
