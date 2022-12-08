@@ -29,6 +29,7 @@ Table of Contents
 * [Day 5](#day-5) *(no reflection yet)*
 * [Day 6](#day-6)
 * [Day 7](#day-7) *(no reflection yet)*
+* [Day 8](#day-8) *(no reflection yet)*
 
 Day 1
 ------
@@ -481,6 +482,50 @@ time                 1.041 ms   (962.4 μs .. 1.115 ms)
 mean                 1.273 ms   (1.067 ms .. 1.712 ms)
 std dev              927.0 μs   (301.2 μs .. 1.664 ms)
 variance introduced by outliers: 98% (severely inflated)
+
+* parsing and formatting times excluded
+```
+
+
+
+Day 8
+------
+
+<!--
+This section is generated and compiled by the build script at ./Build.hs from
+the file `./reflections/day08.md`.  If you want to edit this, edit
+that file instead!
+-->
+
+*[Prompt][d08p]* / *[Code][d08g]* / *[Rendered][d08h]* / *[Standalone Reflection Page][d08r]*
+
+[d08p]: https://adventofcode.com/2022/day/8
+[d08g]: https://github.com/mstksg/advent-of-code-2022/blob/main/src/AOC/Challenge/Day08.hs
+[d08h]: https://mstksg.github.io/advent-of-code-2022/src/AOC.Challenge.Day08.html
+[d08r]: https://github.com/mstksg/advent-of-code-2022/blob/main/reflections-out/day08.md
+
+*Reflection not yet written -- please check back later!*
+
+### Day 8 Benchmarks
+
+```
+>> Day 08a
+benchmarking...
+time                 107.0 ms   (101.1 ms .. 111.8 ms)
+                     0.996 R²   (0.987 R² .. 0.999 R²)
+mean                 106.4 ms   (102.8 ms .. 109.0 ms)
+std dev              5.182 ms   (3.145 ms .. 7.755 ms)
+variance introduced by outliers: 10% (moderately inflated)
+
+* parsing and formatting times excluded
+
+>> Day 08b
+benchmarking...
+time                 115.4 ms   (105.5 ms .. 130.7 ms)
+                     0.986 R²   (0.973 R² .. 0.999 R²)
+mean                 107.0 ms   (102.8 ms .. 112.1 ms)
+std dev              7.839 ms   (5.939 ms .. 9.573 ms)
+variance introduced by outliers: 21% (moderately inflated)
 
 * parsing and formatting times excluded
 ```

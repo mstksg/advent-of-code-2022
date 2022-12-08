@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 -- |
 -- Module      : AOC.Challenge.Day08
 -- License     : BSD3
@@ -9,84 +6,65 @@
 -- Portability : non-portable
 --
 -- Day 8.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day08 (
     day08a
   , day08b
   ) where
 
-import           AOC.Prelude
+import           AOC.Common (countTrue)
+import           AOC.Common.Point (Point)
+import           AOC.Solver ((:~>)(..))
+import           Data.Char (digitToInt)
+import           Data.IntMap (IntMap)
+import           Data.List (findIndex, transpose)
+import           Linear (V2(..), V4(..))
+import           Safe.Foldable (maximumMay)
+import qualified Data.IntMap as IM
 
-import qualified Data.Graph.Inductive           as G
-import qualified Data.IntMap                    as IM
-import qualified Data.IntSet                    as IS
-import qualified Data.List.NonEmpty             as NE
-import qualified Data.List.PointedList          as PL
-import qualified Data.List.PointedList.Circular as PLC
-import qualified Data.Map                       as M
-import qualified Data.OrdPSQ                    as PSQ
-import qualified Data.Sequence                  as Seq
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Data.Vector                    as V
-import qualified Linear                         as L
-import qualified Text.Megaparsec                as P
-import qualified Text.Megaparsec.Char           as P
-import qualified Text.Megaparsec.Char.Lexer     as PP
-
-isVisible
-    :: Map Point Int
-    -> Point
-    -> Bool
-isVisible mp (V2 x y)  = all (< ht) toLeft
-                      || all (< ht) toRight
-                      || all (< ht) toUp
-                      || all (< ht) toDown
+crossSections
+    :: String
+    -> (IntMap [Int], IntMap [Int])
+crossSections xs = ( IM.fromList (zip [0..] horizLines)
+                   , IM.fromList (zip [0..] vertLines)
+                   )
   where
-    ht = mp M.! V2 x y
-    horizLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (x',k) <$ guard (y' == y)) . M.toList $ mp
-    (toLeft, tail->toRight) = splitAt x $ toList $ horizLine
-    vertLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (y',k) <$ guard (x' == x)) . M.toList $ mp
-    (toUp, tail->toDown) = splitAt y $ toList $ vertLine
+    horizLines = map (map digitToInt) $ lines xs
+    vertLines  = transpose horizLines
 
-scenic
-    :: Map Point Int
+visibility
+    :: (IntMap [Int], IntMap [Int])
     -> Point
-    -> Int
-scenic mp (V2 x y)  = maybe (length toLeft) (+1) (findIndex (>= ht) (reverse toLeft))
-                    * maybe (length toRight) (+1) (findIndex (>= ht) toRight)
-                    * maybe (length toUp) (+1) (findIndex (>= ht) (reverse toUp))
-                    * maybe (length toDown) (+1) (findIndex (>= ht) toDown)
+    -> V4 (Bool, Int)
+visibility (horizLines, vertLines) (V2 x y) =
+    reshape <$> V4 toUp toRight toDown toLeft
   where
-    ht = mp M.! V2 x y
-    horizLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (x',k) <$ guard (y' == y)) . M.toList $ mp
-    (toLeft, tail->toRight) = splitAt x $ toList $ horizLine
-    vertLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (y',k) <$ guard (x' == x)) . M.toList $ mp
-    (toUp, tail->toDown) = splitAt y $ toList $ vertLine
-
-
+    (reverse->toLeft, hereAndToRight) = splitAt x (horizLines IM.! y)
+    (reverse->toUp  , tail->toDown  ) = splitAt y (vertLines  IM.! x)
+    here    = head hereAndToRight
+    toRight = tail hereAndToRight
+    reshape ls = case findIndex (>= here) ls of
+      Nothing -> (True , length ls)
+      Just i  -> (False, i + 1    )
 
 day08a :: _ :~> _
 day08a = MkSol
-    { sParse = Just . parseAsciiMap digitToIntSafe
+    { sParse = Just . crossSections
     , sShow  = show
-    , sSolve = \mp -> Just $ M.size $ M.filterWithKey (\k _ -> isVisible mp k)  mp
+    , sSolve = \cs@(horiz, vert) -> Just . countTrue or $ [
+          fst <$> visibility cs (V2 x y)
+        | y <- IM.keys horiz
+        , x <- IM.keys vert
+        ]
     }
 
 day08b :: _ :~> _
 day08b = MkSol
-    { sParse = sParse day08a
+    { sParse = Just . crossSections
     , sShow  = show
-    , sSolve = \mp -> maximumMay .   map (scenic mp) $ (M.keys mp)
+    , sSolve = \cs@(horiz, vert) -> maximumMay [
+          product $ snd <$> visibility cs (V2 x y)
+        | y <- IM.keys horiz
+        , x <- IM.keys vert
+        ]
     }
