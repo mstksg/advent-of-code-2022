@@ -511,21 +511,21 @@ that file instead!
 ```
 >> Day 08a
 benchmarking...
-time                 107.0 ms   (101.1 ms .. 111.8 ms)
-                     0.996 R²   (0.987 R² .. 0.999 R²)
-mean                 106.4 ms   (102.8 ms .. 109.0 ms)
-std dev              5.182 ms   (3.145 ms .. 7.755 ms)
-variance introduced by outliers: 10% (moderately inflated)
+time                 16.41 ms   (14.99 ms .. 17.83 ms)
+                     0.971 R²   (0.952 R² .. 0.991 R²)
+mean                 18.76 ms   (17.83 ms .. 20.79 ms)
+std dev              3.275 ms   (2.017 ms .. 5.376 ms)
+variance introduced by outliers: 73% (severely inflated)
 
 * parsing and formatting times excluded
 
 >> Day 08b
 benchmarking...
-time                 115.4 ms   (105.5 ms .. 130.7 ms)
-                     0.986 R²   (0.973 R² .. 0.999 R²)
-mean                 107.0 ms   (102.8 ms .. 112.1 ms)
-std dev              7.839 ms   (5.939 ms .. 9.573 ms)
-variance introduced by outliers: 21% (moderately inflated)
+time                 70.23 ms   (64.76 ms .. 74.13 ms)
+                     0.991 R²   (0.978 R² .. 0.998 R²)
+mean                 74.61 ms   (71.64 ms .. 78.71 ms)
+std dev              6.375 ms   (3.348 ms .. 9.130 ms)
+variance introduced by outliers: 26% (moderately inflated)
 
 * parsing and formatting times excluded
 ```

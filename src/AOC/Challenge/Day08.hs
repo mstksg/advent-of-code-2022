@@ -15,6 +15,7 @@ module AOC.Challenge.Day08 (
 import           AOC.Common (countTrue, digitToIntSafe)
 import           AOC.Solver ((:~>)(..))
 import           Data.List (transpose, mapAccumL, foldl')
+import           Data.Profunctor (dimap)
 import           Safe.Foldable (maximumMay)
 import qualified Data.Map as M
 
@@ -23,16 +24,15 @@ onSightLines
     -> (a -> a -> a)
     -> [[Int]]
     -> [a]
-onSightLines f g rows = concat $
-    foldl'
-      ((zipWith . zipWith) g)
-      leftLines
-      [rightLines, upLines, downLines]
+onSightLines f g rows = 
+    foldl' (zipWith g) leftLines [rightLines, upLines, downLines]
   where
-    leftLines  = map f rows
-    rightLines = map (reverse . f . reverse) rows
-    upLines    = transpose $ map f (transpose rows)
-    downLines  = transpose $ map (reverse . f . reverse) (transpose rows)
+    leftLines  = concatMap f rows
+    rightLines = concatMap (rev f) rows
+    upLines    = concat $ tra (map f) rows
+    downLines  = concat $ tra (map (rev f)) rows
+    rev = dimap reverse   reverse
+    tra = dimap transpose transpose
 
 day08a :: [[Int]] :~> Int
 day08a = MkSol
