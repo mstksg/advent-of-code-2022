@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day08 (
-    -- day08a
-  -- , day08b
+    day08a
+  , day08b
   ) where
 
 import           AOC.Prelude
@@ -45,16 +45,48 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+isVisible
+    :: Map Point Int
+    -> Point
+    -> Bool
+isVisible mp (V2 x y)  = all (< ht) toLeft
+                      || all (< ht) toRight
+                      || all (< ht) toUp
+                      || all (< ht) toDown
+  where
+    ht = mp M.! V2 x y
+    horizLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (x',k) <$ guard (y' == y)) . M.toList $ mp
+    (toLeft, tail->toRight) = splitAt x $ toList $ horizLine
+    vertLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (y',k) <$ guard (x' == x)) . M.toList $ mp
+    (toUp, tail->toDown) = splitAt y $ toList $ vertLine
+
+scenic
+    :: Map Point Int
+    -> Point
+    -> Int
+scenic mp (V2 x y)  = maybe (length toLeft) (+1) (findIndex (>= ht) (reverse toLeft))
+                    * maybe (length toRight) (+1) (findIndex (>= ht) toRight)
+                    * maybe (length toUp) (+1) (findIndex (>= ht) (reverse toUp))
+                    * maybe (length toDown) (+1) (findIndex (>= ht) toDown)
+  where
+    ht = mp M.! V2 x y
+    horizLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (x',k) <$ guard (y' == y)) . M.toList $ mp
+    (toLeft, tail->toRight) = splitAt x $ toList $ horizLine
+    vertLine = M.fromList . mapMaybe (\((V2 x' y'),k) -> (y',k) <$ guard (x' == x)) . M.toList $ mp
+    (toUp, tail->toDown) = splitAt y $ toList $ vertLine
+
+
+
 day08a :: _ :~> _
 day08a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . parseAsciiMap digitToIntSafe
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \mp -> Just $ M.size $ M.filterWithKey (\k _ -> isVisible mp k)  mp
     }
 
 day08b :: _ :~> _
 day08b = MkSol
     { sParse = sParse day08a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \mp -> maximumMay .   map (scenic mp) $ (M.keys mp)
     }
