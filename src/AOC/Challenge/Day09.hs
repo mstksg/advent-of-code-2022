@@ -17,10 +17,27 @@ import           AOC.Common.Point (Point, Dir, dirPoint, parseDir)
 import           AOC.Solver ((:~>)(..))
 import           Control.Monad ((<=<))
 import           Data.Bitraversable (bitraverse)
+import           Control.Arrow ((<<<))
 import           Data.List (scanl')
 import           Data.Maybe (listToMaybe)
 import           Text.Read (readMaybe)
 import qualified Data.Set as S
+import qualified Control.Scanl as Scan
+import qualified Control.Foldl as Fold
+import           Control.Monad.State
+
+sumScan :: Num a => Scan.Scan a a
+sumScan = Scan.Scan (\x -> state \y -> let !z = x+y in (z, z)) 0
+
+followScan :: Scan.Scan Point Point
+followScan = Scan.Scan (\x -> state (\y -> let !z = go y x in (z,z))) 0
+  where
+    go curr new
+      | maximum (fmap abs dist) > 1 = curr + signum dist
+      | otherwise                   = curr
+      where
+        dist = new - curr
+
 
 parseLine :: String -> Maybe (Dir, Int)
 parseLine = bitraverse (parseDir <=< listToMaybe) readMaybe
@@ -40,11 +57,14 @@ day09 lagAmount = MkSol
     { sParse = traverse parseLine . lines
     , sShow  = show
     , sSolve = Just . S.size . S.fromList
-             . (!!! lagAmount)
-             . strictIterate lag
-             . scanl' (+) 0
+             . Scan.scan scanner
+             -- . (!!! lagAmount)
+             -- . strictIterate ()
+             -- . scanl' (+) 0
              . concatMap (\(d, i) -> replicate i (dirPoint d))
     }
+  where
+    scanner = foldr (<<<) sumScan $ replicate lagAmount followScan
 
 day09a :: [(Dir, Int)] :~> Int
 day09a = day09 1
