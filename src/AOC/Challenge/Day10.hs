@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day10 (
-    -- day10a
-  -- , day10b
+    day10a
+  , day10b
   ) where
 
 import           AOC.Prelude
@@ -45,16 +45,92 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+data Instr = Noop | Addx Int
+  deriving stock (Show, Eq, Ord, Generic)
+
+instance NFData Instr
+
+data CState = CState
+        { csCycle   :: !Int
+        , csCounter :: !Int
+        }
+  deriving stock (Show, Eq, Ord, Generic)
+
+instance NFData CState
+
+processInstr :: CState -> Instr -> (CState, Int)
+processInstr (CState y o) = \case
+    Noop   -> (CState (y+1) o    , 0)
+    Addx i -> (CState (y+2) (o+i), 1)
+
+runProgram :: [Instr] -> IntMap Int
+runProgram = IM.fromList
+           . map (\(CState y o) -> (y, o))
+           . scanl' (\i -> fst . processInstr i) (CState 1 1)
+
+runCrt :: [Instr] -> Set Point
+runCrt = S.fromList
+       . mapMaybe (\(p@(V2 x _), s) -> p <$ guard (abs (x - s) <= 1))
+       . concatMap expand
+       . snd . mapAccumL processInstr' (CState 1 1)
+  where
+    processInstr' s i = (s', (s', r))
+      where
+        (s', r) = processInstr s i
+    expand (CState y o, r) =
+        [ ( V2 px py, o )
+        | z <- [y .. y + r]
+        , let (py, px) = (z-1) `divMod` 40
+        ]
+
+
+parseInstr :: String -> Maybe Instr
+parseInstr str = case words str of
+    ["noop"]    -> Just Noop
+    ["addx", n] -> Addx <$> readMaybe n
+    _           -> Nothing
+
 day10a :: _ :~> _
 day10a = MkSol
-    { sParse = Just . lines
+    { sParse = traverse parseInstr . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \instrs ->
+        let results = runProgram instrs
+        in  fmap sum $ flip traverse [20,60,100,140,180,220] \i ->
+              (* i) . snd <$> IM.lookupLE i results
     }
 
 day10b :: _ :~> _
 day10b = MkSol
     { sParse = sParse day10a
-    , sShow  = show
-    , sSolve = Just
+    , sShow  = ('\n':) . displayAsciiSet '.' '#'
+    , sSolve = Just . runCrt
+        -- let results = runCrt instrs
+            -- crtMap = IM.fromList
+            --   [
+            --   ]
+        -- in  Just (runCrt results)
+        -- IM.fromList
+        --     [ (i, if )
+        --     | i <- [1..240]
+        --     , Just spritePos <- [IM.lookupLE i results]
+        --     ]
+
+        -- in  fmap sum $ flip traverse [20,60,100,140,180,220] \i ->
+        --       (* i) . snd <$> IM.lookupLE i results
+    -- , sSolve = Just
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
