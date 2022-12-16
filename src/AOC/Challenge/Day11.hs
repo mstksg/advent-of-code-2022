@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day11 (
-    -- day11a
-  -- , day11b
+    day11a
+  , day11b
   ) where
 
 import           AOC.Prelude
@@ -45,11 +45,78 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+data MonkeyData = MD
+    { mdItems :: [Int]
+    , mdTrans :: (Bool, Maybe Int)        -- ^ false is add
+    , mdCond  :: Int
+    , mdTrue  :: Int
+    , mdFalse :: Int
+    }
+  deriving stock (Show)
+
+parseMonkey :: String -> MonkeyData
+parseMonkey blob = MD
+    { mdItems = map read (words (clearOut (not . isDigit) a))
+    , mdTrans = case words . tail $ dropWhile (/= '=') b of
+        [_,x,y] -> (x == "*", readMaybe y)
+    , mdCond  = read $ clearOut (not . isDigit) c
+    , mdTrue = read $ clearOut (not . isDigit) d
+    , mdFalse = read $ clearOut (not . isDigit) e
+    }
+  where
+    [_, a, b, c, d, e] = lines blob
+
+stepState
+    :: MonkeyData
+    -> [Int]
+    -> IntMap (Seq.Seq Int)
+    -> IntMap (Seq.Seq Int)
+stepState mdat xs = IM.unionWith (flip (<>)) newDat
+  where
+    newDat = IM.fromListWith (<>) [
+        (j, Seq.singleton x'')
+      | x <- xs
+      , let x' = case mdTrans mdat of
+              (False, Nothing) -> x + x
+              (False, Just q ) -> x + q
+              (True , Nothing) -> x * x
+              (True , Just q ) -> x * q
+            x'' = x' `div` 3
+            j = if (x'' `div` mdCond mdat) == 0
+                  then mdTrue mdat
+                  else mdFalse mdat
+      ]
+
+stepRound
+    :: [MonkeyData]
+    -> IntMap (Seq.Seq Int)
+    -> (IntMap (Seq.Seq Int), IntMap Int)
+stepRound mds i0 = second IM.fromList $ mapAccumL go i0 (zip [0..] mds)
+  where
+    go smap (mIx, md) = (smap', (mIx, Seq.length toProcess ))
+      where
+        toProcess = IM.findWithDefault Seq.empty mIx smap
+        smap' = IM.delete mIx $ stepState md (toList toProcess) smap
+
+
+-- Monkey 0:
+--   Starting items: 63, 84, 80, 83, 84, 53, 88, 72
+--   Operation: new = old * 11
+--   Test: divisible by 13
+--     If true: throw to monkey 4
+--     If false: throw to monkey 7
+
+
 day11a :: _ :~> _
 day11a = MkSol
-    { sParse = Just . lines
+    { sParse = Just . map parseMonkey . splitOn "\n\n"
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \mds -> Just
+        let initMap = IM.fromList . zipWith (\i md -> (i, Seq.fromList $ mdItems md)) [0..] $ mds
+        in  flip evalState initMap . replicateM 20 $ state $ swap . stepRound mds
+        -- in  product . IM.unionsWith (+) . flip evalState initMap . replicateM 20 $ state $ swap . stepRound mds
+              
+        -- stepRound mds initMap
     }
 
 day11b :: _ :~> _
