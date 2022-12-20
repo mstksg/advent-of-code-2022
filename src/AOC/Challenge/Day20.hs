@@ -45,48 +45,9 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
-day20a :: _ :~> _
-day20a = MkSol
-    { sParse = traverse (readMaybe @Int) . lines
-    , sShow  = show
-    , sSolve = grove . go 0 . Seq.fromList . zip [0..]
-    }
+mix :: Seq.Seq (Int, Int) -> Seq.Seq (Int, Int)
+mix = go 0
   where
-    grove xs = do
-        i <- Seq.elemIndexL 0 xs
-        let ixs = (`mod` n) . (+ i) <$> [1000,2000,3000]
-        vs <- traverse (`Seq.lookup` xs) ixs
-        pure $ sum vs
-      where
-        n = Seq.length xs
-    go :: Int -> Seq.Seq (Int, Int) -> Seq.Seq Int
-    go i xs = case postXsMaybe of
-        (_, v) Seq.:<| postXs ->
-          let newIx = (Seq.length preXs + v) `mod` (n-1)
-          in  go (i+1) $ Seq.insertAt newIx (i,v) (preXs <> postXs)
-        _ -> snd <$> xs
-      where
-        n = Seq.length xs
-        (preXs, postXsMaybe) = Seq.spanl ((/= i) . fst) xs
-
-magic :: Int
-magic = 811589153
-
-day20b :: _ :~> _
-day20b = MkSol
-    { sParse = sParse day20a
-    , sShow  = show
-    , sSolve = grove . fmap snd . (!!! 10) . iterate (go 0) . Seq.fromList . zip [0..] . map (*magic)
-    }
-  where
-    grove xs = do
-        i <- Seq.elemIndexL 0 xs
-        let ixs = (`mod` n) . (+ i) <$> [1000,2000,3000]
-        vs <- traverse (`Seq.lookup` xs) ixs
-        pure $ sum vs
-      where
-        n = Seq.length xs
-    go :: Int -> Seq.Seq (Int, Int) -> Seq.Seq (Int, Int)
     go i xs = case postXsMaybe of
         (_, v) Seq.:<| postXs ->
           let newIx = (Seq.length preXs + v) `mod` (n-1)
@@ -95,3 +56,31 @@ day20b = MkSol
       where
         n = Seq.length xs
         (preXs, postXsMaybe) = Seq.spanl ((/= i) . fst) xs
+
+grove :: Seq.Seq Int -> Maybe Int
+grove xs = do
+    i <- Seq.elemIndexL 0 xs
+    let ixs = (`mod` n) . (+ i) <$> [1000,2000,3000]
+    vs <- traverse (`Seq.lookup` xs) ixs
+    pure $ sum vs
+  where
+    n = Seq.length xs
+
+day20a :: _ :~> _
+day20a = MkSol
+    { sParse = traverse (readMaybe @Int) . lines
+    , sShow  = show
+    , sSolve = grove . fmap snd . mix . Seq.fromList . zip [0..]
+    }
+
+magic :: Int
+magic = 811589153
+
+day20b :: _ :~> _
+day20b = MkSol
+    { sParse = sParse day20a
+    , sShow  = show
+    , sSolve = grove . fmap snd
+             . (!!! 10) . iterate mix
+             . Seq.fromList . zip [0..] . map (*magic)
+    }
