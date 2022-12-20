@@ -45,63 +45,71 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
--- Valve NA has flow rate=0; tunnels lead to valves MU, PH
--- Valve NW has flow rate=0; tunnels lead to valves KB, MH
-
 parseLine :: String -> Maybe (String, (Int, Set String))
 parseLine xs = do
     (a, bs) <- uncons $ words $ clearOut (not . isUpper) (tail xs)
     r       <- readMaybe $ clearOut (not . isDigit) xs
     pure (a, (r, S.fromList bs))
 
-data PuzzState = PuzzState
-    { time      :: !Int
-    , currPos   :: !String
-    , openPipes :: !(Set String)
+data PuzzState f = PuzzState
+    { time   :: !Int
+    , pos    :: !(f String)
+    , opened :: !(Set String)
     }
-  deriving stock (Show, Generic, Eq, Ord)
+  deriving stock (Generic)
 
-instance NFData PuzzState
+instance NFData (f String) => NFData (PuzzState f)
+deriving stock instance Show (f String) => Show (PuzzState f)
+deriving stock instance Eq (f String) => Eq (PuzzState f)
+deriving stock instance Ord (f String) => Ord (PuzzState f)
 
 searchPuzzle
-    :: Map String (Int, Set String)
-    -> Maybe (Int, [PuzzState])
-searchPuzzle mp = fmap (first reCost) $ aStar
-    (oneTickCost . openPipes)
+    :: forall f. (Applicative f, Traversable f, Ord (f String))
+    => Int
+    -> Map String (Int, Set String)
+    -> Maybe (Int, [PuzzState f])
+searchPuzzle maxTime mp = fmap (first reCost) $ aStar
+    (const 0)
+    -- (oneTickCost . opened)
     expand
-    (PuzzState 1 "AA" S.empty)
-    (\(PuzzState t _ o) -> t >= 30 || S.size o >= S.size pipesWithFlow)
+    (PuzzState 1 (pure "AA") S.empty)
+    (\(PuzzState t _ o) -> t >= maxTime || S.size o >= S.size pipesWithFlow)
   where
     pipesWithFlow = M.keysSet $ M.filter ((> 0) . fst) mp
-    reCost x = (oneTickCost S.empty * 30) - x
+    reCost x = (oneTickCost S.empty * maxTime) - x
     oneTickCost :: Set String -> Int
     oneTickCost opened = sum . map fst . toList $ mp `M.withoutKeys` opened
-    expand (PuzzState t p o) = M.fromList $ map (,newCost) (stayHereAndOpen ++ moveToAnother)
+    expand :: PuzzState f -> Map (PuzzState f) Int
+    expand (PuzzState t ps o) = M.fromList
+        [ (PuzzState (t+1) newPos (S.unions newSeen), oneTickCost o)
+        -- it's always traverse
+        | newPosSeen <- traverse go ps
+        , let newPos  = fst <$> newPosSeen
+              newSeen = snd <$> newPosSeen
+        ]
       where
-        newCost = oneTickCost o
-        moveToAnother = do
-          p' <- toList $ snd (mp M.! p)
-          pure (PuzzState (t+1) p' o)
-        stayHereAndOpen = do
-          guard $ p `S.member` pipesWithFlow && p `S.notMember` o
-          pure $ PuzzState (t+1) p (S.insert p o)
+        go :: String -> [(String, Set String)]
+        go p = stayHereAndOpen <|> moveToAnother
+          where
+            moveToAnother = do
+              p' <- toList $ snd (mp M.! p)
+              pure (p', o)
+            stayHereAndOpen = do
+              guard $ p `S.member` pipesWithFlow && p `S.notMember` o
+              pure (p, S.insert p o)
 
-puzzleFlow :: Map String (Int, Set String) -> [PuzzState] -> Int
-puzzleFlow mp xs = sum . take 30 $ map flow (xs ++ repeat (last xs))
-  where
-    flow (PuzzState _ _ o) = sum . map fst . toList $ mp `M.restrictKeys` o
-
-    
-day16a :: _ :~> _
-day16a = MkSol
+day16
+    :: forall f. (Applicative f, Traversable f, Ord (f String))
+    => Int
+    -> Map String (Int, Set String) :~> Int
+day16 t = MkSol
     { sParse = fmap M.fromList . traverse parseLine . lines
     , sShow  = show
-    , sSolve = fmap fst . searchPuzzle
+    , sSolve = fmap fst . searchPuzzle @f t
     }
 
-day16b :: _ :~> _
-day16b = MkSol
-    { sParse = sParse day16a
-    , sShow  = show
-    , sSolve = Just
-    }
+day16a :: Map String (Int, Set String) :~> Int
+day16a = day16 @V1 30
+
+day16b :: Map String (Int, Set String) :~> Int
+day16b = day16 @V2 26
