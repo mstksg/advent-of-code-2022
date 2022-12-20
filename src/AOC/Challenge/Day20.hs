@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day20 (
-    -- day20a
-  -- , day20b
+    day20a
+  , day20b
   ) where
 
 import           AOC.Prelude
@@ -47,14 +47,51 @@ import qualified Text.Megaparsec.Char.Lexer     as PP
 
 day20a :: _ :~> _
 day20a = MkSol
-    { sParse = Just . lines
+    { sParse = traverse (readMaybe @Int) . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = grove . go 0 . Seq.fromList . zip [0..]
     }
+  where
+    grove xs = do
+        i <- Seq.elemIndexL 0 xs
+        let ixs = (`mod` n) . (+ i) <$> [1000,2000,3000]
+        vs <- traverse (`Seq.lookup` xs) ixs
+        pure $ sum vs
+      where
+        n = Seq.length xs
+    go :: Int -> Seq.Seq (Int, Int) -> Seq.Seq Int
+    go i xs = case postXsMaybe of
+        (_, v) Seq.:<| postXs ->
+          let newIx = (Seq.length preXs + v) `mod` (n-1)
+          in  go (i+1) $ Seq.insertAt newIx (i,v) (preXs <> postXs)
+        _ -> snd <$> xs
+      where
+        n = Seq.length xs
+        (preXs, postXsMaybe) = Seq.spanl ((/= i) . fst) xs
+
+magic :: Int
+magic = 811589153
 
 day20b :: _ :~> _
 day20b = MkSol
     { sParse = sParse day20a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = grove . fmap snd . (!!! 10) . iterate (go 0) . Seq.fromList . zip [0..] . map (*magic)
     }
+  where
+    grove xs = do
+        i <- Seq.elemIndexL 0 xs
+        let ixs = (`mod` n) . (+ i) <$> [1000,2000,3000]
+        vs <- traverse (`Seq.lookup` xs) ixs
+        pure $ sum vs
+      where
+        n = Seq.length xs
+    go :: Int -> Seq.Seq (Int, Int) -> Seq.Seq (Int, Int)
+    go i xs = case postXsMaybe of
+        (_, v) Seq.:<| postXs ->
+          let newIx = (Seq.length preXs + v) `mod` (n-1)
+          in  go (i+1) $ Seq.insertAt newIx (i,v) (preXs <> postXs)
+        _ -> xs
+      where
+        n = Seq.length xs
+        (preXs, postXsMaybe) = Seq.spanl ((/= i) . fst) xs

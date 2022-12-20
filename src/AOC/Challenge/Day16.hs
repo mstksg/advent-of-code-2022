@@ -69,8 +69,7 @@ searchPuzzle
     -> Map String (Int, Set String)
     -> Maybe (Int, [PuzzState f])
 searchPuzzle maxTime mp = fmap (first reCost) $ aStar
-    (const 0)
-    -- (oneTickCost . opened)
+    (oneTickCost . opened)
     expand
     (PuzzState 1 (pure "AA") S.empty)
     (\(PuzzState t _ o) -> t >= maxTime || S.size o >= S.size pipesWithFlow)

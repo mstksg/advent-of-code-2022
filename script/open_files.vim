@@ -30,6 +30,8 @@ function! OpenAoC(day)
                   \"data/code-blocks/" . l:daystr . "b.txt",
                   \"test-data/" . l:yearstr . "/" . l:daystr . "a.txt",
                   \"test-data/" . l:yearstr . "/" . l:daystr . "b.txt",
+                  \"logs/submission/" . l:daystr . "a.txt",
+                  \"logs/submission/" . l:daystr . "b.txt",
                   \"reflections/day" . l:daystr . ".md",
                   \"bench-out/day" . l:daystr . ".txt"
                   \]
