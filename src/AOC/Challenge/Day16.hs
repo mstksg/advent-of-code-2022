@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day16 (
-    -- day16a
-  -- , day16b
+    day16a
+  , day16b
   ) where
 
 import           AOC.Prelude
@@ -45,11 +45,58 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+-- Valve NA has flow rate=0; tunnels lead to valves MU, PH
+-- Valve NW has flow rate=0; tunnels lead to valves KB, MH
+
+parseLine :: String -> Maybe (String, (Int, Set String))
+parseLine xs = do
+    (a, bs) <- uncons $ words $ clearOut (not . isUpper) (tail xs)
+    r       <- readMaybe $ clearOut (not . isDigit) xs
+    pure (a, (r, S.fromList bs))
+
+data PuzzState = PuzzState
+    { time      :: !Int
+    , currPos   :: !String
+    , openPipes :: !(Set String)
+    }
+  deriving stock (Show, Generic, Eq, Ord)
+
+instance NFData PuzzState
+
+searchPuzzle
+    :: Map String (Int, Set String)
+    -> Maybe (Int, [PuzzState])
+searchPuzzle mp = fmap (first reCost) $ aStar
+    (oneTickCost . openPipes)
+    expand
+    (PuzzState 1 "AA" S.empty)
+    (\(PuzzState t _ o) -> t >= 30 || S.size o >= S.size pipesWithFlow)
+  where
+    pipesWithFlow = M.keysSet $ M.filter ((> 0) . fst) mp
+    reCost x = (oneTickCost S.empty * 30) - x
+    oneTickCost :: Set String -> Int
+    oneTickCost opened = sum . map fst . toList $ mp `M.withoutKeys` opened
+    expand (PuzzState t p o) = M.fromList $ map (,newCost) (stayHereAndOpen ++ moveToAnother)
+      where
+        newCost = oneTickCost o
+        moveToAnother = do
+          p' <- toList $ snd (mp M.! p)
+          pure (PuzzState (t+1) p' o)
+        stayHereAndOpen = do
+          guard $ p `S.member` pipesWithFlow && p `S.notMember` o
+          pure $ PuzzState (t+1) p (S.insert p o)
+
+puzzleFlow :: Map String (Int, Set String) -> [PuzzState] -> Int
+puzzleFlow mp xs = sum . take 30 $ map flow (xs ++ repeat (last xs))
+  where
+    flow (PuzzState _ _ o) = sum . map fst . toList $ mp `M.restrictKeys` o
+
+    
 day16a :: _ :~> _
 day16a = MkSol
-    { sParse = Just . lines
+    { sParse = fmap M.fromList . traverse parseLine . lines
     , sShow  = show
-    , sSolve = Just
+    , sSolve = fmap fst . searchPuzzle
     }
 
 day16b :: _ :~> _
