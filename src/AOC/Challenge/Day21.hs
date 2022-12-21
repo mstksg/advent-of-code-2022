@@ -18,7 +18,6 @@ import           AOC.Solver ((:~>)(..))
 import           Data.Functor.Foldable
 import           Data.Functor.Foldable.TH
 import           Data.List.Split (splitOn)
-import           Data.Map (Map)
 import           Text.Read (readMaybe)
 import qualified Data.Map as M
 
@@ -43,19 +42,13 @@ evalF = \case
     LeafF i     -> Just i
     VarF        -> Nothing
 
-exprFromF :: Map String (ExprF String) -> String -> ExprF String
-exprFromF mp rt = case mp M.! rt of
-    NodeF o x y -> NodeF o x y
-    LeafF i     -> LeafF i
-    VarF        -> VarF
-
 day21a :: [(String, ExprF String)] :~> Int
 day21a = MkSol
     { sParse = traverse parseLine . lines
     , sShow  = show
     , sSolve = \pairs ->
         let mp = M.fromList pairs
-        in  hylo evalF (exprFromF mp) "root"
+        in  hylo evalF (mp M.!) "root"
     }
 
 -- | target, value
@@ -95,7 +88,7 @@ day21b = MkSol
         let mp = M.adjust reRoot "root"
                $ M.insert "humn" VarF
                $ M.fromList pairs
-        in  case hylo evalSolveF (exprFromF mp) "root" of
+        in  case hylo evalSolveF (mp M.!) "root" of
               Left  f -> Just $ f 0         -- make a-b = 0
               Right _ -> Nothing            -- constant value, no solve
     }
