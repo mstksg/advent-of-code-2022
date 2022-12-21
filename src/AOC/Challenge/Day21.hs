@@ -1,5 +1,4 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- |
 -- Module      : AOC.Challenge.Day21
@@ -9,125 +8,110 @@
 -- Portability : non-portable
 --
 -- Day 21.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day21 (
     day21a
   , day21b
   ) where
 
-import           AOC.Prelude
+import           AOC.Solver ((:~>)(..))
+import           Data.Functor.Foldable
+import           Data.Functor.Foldable.TH
+import           Data.List.Split (splitOn)
+import           Data.Map (Map)
+import           Text.Read (readMaybe)
+import qualified Data.Map as M
 
-import qualified Data.Graph.Inductive           as G
-import qualified Data.IntMap                    as IM
-import qualified Data.IntSet                    as IS
-import qualified Data.List.NonEmpty             as NE
-import qualified Data.List.PointedList          as PL
-import qualified Data.List.PointedList.Circular as PLC
-import qualified Data.Map                       as M
-import qualified Data.OrdPSQ                    as PSQ
-import qualified Data.Sequence                  as Seq
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Data.Vector                    as V
-import qualified Linear                         as L
-import qualified Text.Megaparsec                as P
-import qualified Text.Megaparsec.Char           as P
-import qualified Text.Megaparsec.Char.Lexer     as PP
+data Op = Add | Sub | Mul | Div
 
-data Node = Add String String
-          | Mul String String
-          | Div String String
-          | Sub String String
+runOp :: Op -> Int -> Int -> Int
+runOp = \case
+    Add -> (+)
+    Sub -> (-)
+    Mul -> (*)
+    Div -> div
+
+data Expr = Node Op Expr Expr
           | Leaf Int
-  deriving stock (Show)
+          | Var
 
-parseLine :: String -> Maybe (String, Node)
+makeBaseFunctor ''Expr
+
+evalF :: ExprF (Maybe Int) -> Maybe Int
+evalF = \case
+    NodeF o x y -> runOp o <$> x <*> y
+    LeafF i     -> Just i
+    VarF        -> Nothing
+
+exprFromF :: Map String (ExprF String) -> String -> ExprF String
+exprFromF mp rt = case mp M.! rt of
+    NodeF o x y -> NodeF o x y
+    LeafF i     -> LeafF i
+    VarF        -> VarF
+
+day21a :: [(String, ExprF String)] :~> Int
+day21a = MkSol
+    { sParse = traverse parseLine . lines
+    , sShow  = show
+    , sSolve = \pairs ->
+        let mp = M.fromList pairs
+        in  hylo evalF (exprFromF mp) "root"
+    }
+
+-- | target, value
+invOpRight :: Op -> Int -> Int -> Int
+invOpRight = \case
+    Add -> (-)
+    Sub -> flip (-)
+    Mul -> div
+    Div -> flip div
+
+-- | target, value
+invOpLeft :: Op -> Int -> Int -> Int
+invOpLeft = \case
+    Add -> (-)
+    Sub -> (+)
+    Mul -> div
+    Div -> (*)
+
+-- | Right if it gives an answer, Left if it involves a Var, with a function
+-- from a target number returning what the var needs to be to make the
+-- expression hit that target.
+evalSolveF :: ExprF (Either (Int -> Int) Int) -> Either (Int -> Int) Int
+evalSolveF = \case
+    NodeF o x y -> case (x, y) of
+      (Right x', Right y') -> Right $ runOp o x' y'
+      (Right x', Left  fy) -> Left $ fy . flip (invOpRight o) x'
+      (Left  fx, Right y') -> Left $ fx . flip (invOpLeft  o) y'
+      (Left  _ , Left  _ ) -> error "Unsupported: multiple variables"
+    LeafF i     -> Right i
+    VarF        -> Left id
+
+day21b :: [(String, ExprF String)] :~> Int
+day21b = MkSol
+    { sParse = traverse parseLine . lines
+    , sShow  = show
+    , sSolve = \pairs ->
+        let mp = M.adjust reRoot "root"
+               $ M.insert "humn" VarF
+               $ M.fromList pairs
+        in  case hylo evalSolveF (exprFromF mp) "root" of
+              Left  f -> Just $ f 0         -- make a-b = 0
+              Right _ -> Nothing            -- constant value, no solve
+    }
+  where
+    reRoot = \case
+      NodeF Add x y -> NodeF Sub x y
+      _             -> error "root should be +"
+
+parseLine :: String -> Maybe (String, ExprF String)
 parseLine str = case splitOn ":" str of
     [k, v] -> (k,) <$> case readMaybe v of
-      Just x -> Just $ Leaf x
+      Just x -> Just $ LeafF x
       Nothing -> case words v of
-        [a,"+",b] -> Just $ Add a b
-        [a,"-",b] -> Just $ Sub a b
-        [a,"*",b] -> Just $ Mul a b
-        [a,"/",b] -> Just $ Div a b
+        [a,"+",b] -> Just $ NodeF Add a b
+        [a,"-",b] -> Just $ NodeF Sub a b
+        [a,"*",b] -> Just $ NodeF Mul a b
+        [a,"/",b] -> Just $ NodeF Div a b
         _ -> Nothing
     _ -> Nothing
-
-
-day21a :: _ :~> _
-day21a = MkSol
-    { sParse = fmap M.fromList . traverse parseLine . lines
-    , sShow  = show
-    , sSolve = \xs -> Just
-        let res = flip fmap xs \case
-              Leaf i -> i
-              Add a b -> res M.! a + res M.! b
-              Mul a b -> res M.! a * res M.! b
-              Div a b -> res M.! a `div` res M.! b
-              Sub a b -> res M.! a - res M.! b
-        in  res M.! "root"
-    }
-
-day21b :: _ :~> _
-day21b = MkSol
-    { sParse = sParse day21a
-    , sShow  = show
-    , sSolve = \xs -> Just
-        let Add a b = xs M.! "root"
-            hasHumn = flip M.mapWithKey xs \case
-                "humn" -> const True
-                _      -> \case
-                  Leaf i -> False
-                  Add a b -> hasHumn M.! a || hasHumn M.! b
-                  Mul a b -> hasHumn M.! a || hasHumn M.! b
-                  Div a b -> hasHumn M.! a || hasHumn M.! b
-                  Sub a b -> hasHumn M.! a || hasHumn M.! b
-            res = flip fmap xs \case
-              Leaf i -> i
-              Add a b -> res M.! a + res M.! b
-              Mul a b -> res M.! a * res M.! b
-              Div a b -> res M.! a `div` res M.! b
-              Sub a b -> res M.! a - res M.! b
-            humnEqual x target = case x of
-              "humn" -> target
-              _      -> case xs M.! x of
-                Leaf i -> undefined
-                Add a b
-                  | hasHumn M.! a -> humnEqual a (target - res M.! b)
-                  | otherwise     -> humnEqual b (target - res M.! a)
-                Sub a b
-                  | hasHumn M.! a -> humnEqual a (target + res M.! b)
-                  | otherwise     -> humnEqual b (res M.! a - target)
-                Mul a b
-                  | hasHumn M.! a -> humnEqual a (target `div` res M.! b)
-                  | otherwise     -> humnEqual b (target `div` res M.! a)
-                Div a b
-                  | hasHumn M.! a -> humnEqual a (target * res M.! b)
-                  | otherwise     -> humnEqual b (res M.! a `div` target)
-        in  if hasHumn M.! a
-              then humnEqual a (res M.! b)
-              else humnEqual b (res M.! a)
-        -- in  Just (hasHumn M.! a, hasHumn M.! b)
-
---             go i = res M.! a == res M.! b
---               where
---                 res = flip fmap xs \case
---                   Leaf i -> i
---                   Add a b -> res M.! a + res M.! b
---                   Mul a b -> res M.! a * res M.! b
---                   Div a b -> res M.! a `div` res M.! b
---                   Sub a b -> res M.! a - res M.! b
---                 ys = M.insert "humn" (Leaf i) xs
---         in  find go [0..]
-    }
