@@ -83,7 +83,7 @@ day21b :: _ :~> _
 day21b = MkSol
     { sParse = sParse day21a
     , sShow  = show
-    , sSolve = \xs ->
+    , sSolve = \xs -> Just
         let Add a b = xs M.! "root"
             hasHumn = flip M.mapWithKey xs \case
                 "humn" -> const True
@@ -115,7 +115,9 @@ day21b = MkSol
                 Div a b
                   | hasHumn M.! a -> humnEqual a (target * res M.! b)
                   | otherwise     -> humnEqual b (res M.! a `div` target)
-        in  Just $ humnEqual a (res M.! b)
+        in  if hasHumn M.! a
+              then humnEqual a (res M.! b)
+              else humnEqual b (res M.! a)
         -- in  Just (hasHumn M.! a, hasHumn M.! b)
 
 --             go i = res M.! a == res M.! b
