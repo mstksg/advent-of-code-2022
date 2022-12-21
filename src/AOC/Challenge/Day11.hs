@@ -45,26 +45,28 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+data MonkeyOp = Add | Mul
+  deriving stock (Show)
+
 data MonkeyData = MD
     { mdItems :: [Int]
-    , mdTrans :: (Bool, Maybe Int)        -- ^ false is add
+    , mdTrans :: (MonkeyOp, Maybe Int)        -- ^ false is add
     , mdCond  :: Int
     , mdTrue  :: Int
     , mdFalse :: Int
     }
   deriving stock (Show)
 
-parseMonkey :: String -> MonkeyData
-parseMonkey blob = MD
-    { mdItems = map read (words (clearOut (not . isDigit) a))
-    , mdTrans = case words . tail $ dropWhile (/= '=') b of
-        [_,x,y] -> (x == "*", readMaybe y)
-    , mdCond  = read $ clearOut (not . isDigit) c
-    , mdTrue = read $ clearOut (not . isDigit) d
-    , mdFalse = read $ clearOut (not . isDigit) e
-    }
-  where
-    [_, a, b, c, d, e] = lines blob
+parseMonkey :: String -> Maybe MonkeyData
+parseMonkey blob = do
+    [_, a, b, c, d, e] <- pure $ lines blob
+    mdItems   <- traverse readMaybe $ words (clearOut (not . isDigit) a)
+    [_, x, y] <- pure $ words . tail $ dropWhile (/= '=') b
+    let mdTrans = (if x == "*" then Mul else Add, readMaybe y)
+    mdCond    <- readMaybe $ clearOut (not . isDigit) c
+    mdTrue    <- readMaybe $ clearOut (not . isDigit) d
+    mdFalse   <- readMaybe $ clearOut (not . isDigit) e
+    pure MD{..}
 
 stepState
     :: MonkeyData
@@ -77,10 +79,10 @@ stepState mdat xs = IM.unionWith (flip (<>)) newDat
         (j, Seq.singleton x'')
       | x <- xs
       , let x' = case mdTrans mdat of
-              (False, Nothing) -> x + x
-              (False, Just q ) -> x + q
-              (True , Nothing) -> x * x
-              (True , Just q ) -> x * q
+              (Add, Nothing) -> x + x
+              (Add, Just q ) -> x + q
+              (Mul, Nothing) -> x * x
+              (Mul, Just q ) -> x * q
             x'' = x' `div` 3
             j = if (x'' `div` mdCond mdat) == 0
                   then mdTrue mdat
@@ -109,13 +111,12 @@ stepRound mds i0 = second IM.fromList $ mapAccumL go i0 (zip [0..] mds)
 
 day11a :: _ :~> _
 day11a = MkSol
-    { sParse = Just . map parseMonkey . splitOn "\n\n"
+    { sParse = traverse parseMonkey . splitOn "\n\n"
     , sShow  = show
     , sSolve = \mds -> Just
         let initMap = IM.fromList . zipWith (\i md -> (i, Seq.fromList $ mdItems md)) [0..] $ mds
         in  flip evalState initMap . replicateM 20 $ state $ swap . stepRound mds
         -- in  product . IM.unionsWith (+) . flip evalState initMap . replicateM 20 $ state $ swap . stepRound mds
-              
         -- stepRound mds initMap
     }
 
