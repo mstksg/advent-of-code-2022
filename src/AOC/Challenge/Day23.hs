@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports   #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 -- |
 -- Module      : AOC.Challenge.Day23
 -- License     : BSD3
@@ -9,41 +6,24 @@
 -- Portability : non-portable
 --
 -- Day 23.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day23 (
     day23a
   , day23b
   ) where
 
-import           AOC.Prelude
-
-import qualified Data.Graph.Inductive           as G
-import qualified Data.IntMap                    as IM
-import qualified Data.IntSet                    as IS
-import qualified Data.List.NonEmpty             as NE
-import qualified Data.List.PointedList          as PL
-import qualified Data.List.PointedList.Circular as PLC
-import qualified Data.Map                       as M
-import qualified Data.OrdPSQ                    as PSQ
-import qualified Data.Sequence                  as Seq
-import qualified Data.Set                       as S
-import qualified Data.Text                      as T
-import qualified Data.Vector                    as V
-import qualified Linear                         as L
-import qualified Text.Megaparsec                as P
-import qualified Text.Megaparsec.Char           as P
-import qualified Text.Megaparsec.Char.Lexer     as PP
+import           AOC.Common (freqs, slidingPairs)
+import           AOC.Common.Point (Point, Dir(..), parseAsciiSet, boundingBox, fullNeighbsSet, rotPoint, dirPoint)
+import           AOC.Solver ((:~>)(..))
+import           Control.Monad (guard)
+import           Data.Foldable (asum, toList)
+import           Data.List (findIndex, scanl', foldl')
+import           Data.Set (Set)
+import           Data.Set.NonEmpty (NESet)
+import           Linear.V2 (V2(..))
+import qualified Data.Map as M
+import qualified Data.Set as S
+import qualified Data.Set.NonEmpty as NES
 
 step :: Set Point -> Int -> Set Point
 step xs n = S.fromList . toList $ flip M.mapWithKey proposalMap $ \p0 x ->
@@ -51,45 +31,37 @@ step xs n = S.fromList . toList $ flip M.mapWithKey proposalMap $ \p0 x ->
       then p0
       else x
   where
-    proposalMap = flip M.fromSet xs \p ->
-      if S.null $ fullNeighbsSet p `S.intersection` xs
-        then p
-        else (+ p) . fromMaybe 0 . asum @_ @Maybe . take 4 . drop (n `mod` 4) . cycle $ [
-            V2 0 (-1) <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 0 (-1),p+V2 (-1) (-1),p+V2 1 (-1)]))
-          , V2 0 1 <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 0 1,p+V2 (-1) 1,p+V2 1 1]))
-          , V2 (-1) 0  <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 (-1) (-1),p+V2 (-1) 0,p+V2 (-1) 1]))
-          , V2 1 0  <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 1 (-1),p+V2 1 0,p+V2 1 1]))
+    proposalMap = M.fromSet makeProposal xs
+    makeProposal p
+      | allClear  = p
+      | otherwise = (+ p) . maybe 0 dirPoint . asum . shift $ [
+            d <$ guard (S.null (xs `S.intersection` clearance))
+          | d <- [South, North, West, East]
+          , let clearance = S.fromList $
+                  (+ p) . rotPoint d <$> [V2 (-1) 1, V2 0 1, V2 1 1]
           ]
+      where
+        allClear = S.null $ fullNeighbsSet p `S.intersection` xs
     allProps = freqs $ proposalMap
+    shift = take 4 . drop (n `mod` 4) . cycle
 
+countEmpty :: NESet Point -> Int
+countEmpty xs = product (maxs - mins + 1) - NES.size xs
+  where
+    V2 mins maxs = boundingBox xs
 
-day23a :: _ :~> _
+day23a :: Set Point :~> NESet Point
 day23a = MkSol
     { sParse = Just . parseAsciiSet (== '#')
-    -- , sShow = ('\n':) . unlines . map (displayAsciiSet '.' '#')
-    , sShow  = \xs -> show
-        let Just (V2 (V2 xMin yMin) (V2 xMax yMax)) = boundingBox'  xs
-            allPoints = S.fromList $ V2 <$> [xMin .. xMax] <*> [yMin .. yMax]
-        in  ((xMax-xMin+1)*(yMax-yMin+1)) - S.size xs
-        -- (S.size xs -) . S.size . S.intersection xs . S.fromList $ V2 <$> [xMin .. xMax] <*> [yMin .. yMax]
--- Returns @'V2' (V2 xMin yMin) (V2 xMax yMax)@.
--- -- | A version of 'boundingBox' that works for normal possibly-empty lists.
--- boundingBox' :: (Foldable f, Applicative g, Ord a) => f (g a) -> Maybe (V2 (g a))
--- boundingBox' = fmap boundingBox . NE.nonEmpty . toList
-
-    -- , sSolve = \xs -> Just $ scanl step xs [0..9]
-    , sSolve = \xs -> Just $ foldl' step xs [0..9]
+    , sShow  = show . countEmpty
+    , sSolve = \xs -> NES.nonEmptySet $ foldl' step xs [0..9]
     }
 
-day23b :: _ :~> _
+day23b :: Set Point :~> Int
 day23b = MkSol
-    { sParse = sParse day23a
+    { sParse = Just . parseAsciiSet (== '#')
     , sShow  = show
-    , sSolve = \xs -> fmap fst . firstRepeatedBy snd . zip [0..] $ scanl step xs [0..]
+    , sSolve = \xs -> fmap (+ 1) . findIndex (uncurry (==))
+                    . slidingPairs . scanl' step xs
+                    $ [0..]
     }
-
--- firstRepeatedBy :: Ord a => (b -> a) -> [b] -> Maybe b
-
--- -- | Lazily find the first repeated item.
--- firstRepeated :: Ord a => [a] -> Maybe a
--- firstRepeated = firstRepeatedBy id
