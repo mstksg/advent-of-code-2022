@@ -34,14 +34,15 @@ step xs n = S.fromList . toList $ flip M.mapWithKey proposalMap $ \p0 x ->
     proposalMap = M.fromSet makeProposal xs
     makeProposal p
       | allClear  = p
-      | otherwise = (+ p) . maybe 0 dirPoint . asum . shift $ [
-            d <$ guard (S.null (xs `S.intersection` clearance))
+      | otherwise = maybe 0 ((+ p) . dirPoint) . asum . shift $ [
+            d <$ guard (S.null (neighbs `S.intersection` clearance))
           | d <- [South, North, West, East]
           , let clearance = S.fromList $
                   (+ p) . rotPoint d <$> [V2 (-1) 1, V2 0 1, V2 1 1]
           ]
       where
-        allClear = S.null $ fullNeighbsSet p `S.intersection` xs
+        neighbs = fullNeighbsSet p `S.intersection` xs
+        allClear = S.null neighbs
     allProps = freqs $ proposalMap
     shift = take 4 . drop (n `mod` 4) . cycle
 
