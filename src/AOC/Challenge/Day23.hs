@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day23 (
-    -- day23a
-  -- , day23b
+    day23a
+  , day23b
   ) where
 
 import           AOC.Prelude
@@ -45,16 +45,51 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+step :: Set Point -> Int -> Set Point
+step xs n = S.fromList . toList $ flip M.mapWithKey proposalMap $ \p0 x ->
+    if allProps M.! x > 1
+      then p0
+      else x
+  where
+    proposalMap = flip M.fromSet xs \p ->
+      if S.null $ fullNeighbsSet p `S.intersection` xs
+        then p
+        else (+ p) . fromMaybe 0 . asum @_ @Maybe . take 4 . drop (n `mod` 4) . cycle $ [
+            V2 0 (-1) <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 0 (-1),p+V2 (-1) (-1),p+V2 1 (-1)]))
+          , V2 0 1 <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 0 1,p+V2 (-1) 1,p+V2 1 1]))
+          , V2 (-1) 0  <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 (-1) (-1),p+V2 (-1) 0,p+V2 (-1) 1]))
+          , V2 1 0  <$ guard (S.null $ S.intersection xs (S.fromList [p+V2 1 (-1),p+V2 1 0,p+V2 1 1]))
+          ]
+    allProps = freqs $ proposalMap
+
+
 day23a :: _ :~> _
 day23a = MkSol
-    { sParse = Just . lines
-    , sShow  = show
-    , sSolve = Just
+    { sParse = Just . parseAsciiSet (== '#')
+    -- , sShow = ('\n':) . unlines . map (displayAsciiSet '.' '#')
+    , sShow  = \xs -> show
+        let Just (V2 (V2 xMin yMin) (V2 xMax yMax)) = boundingBox'  xs
+            allPoints = S.fromList $ V2 <$> [xMin .. xMax] <*> [yMin .. yMax]
+        in  ((xMax-xMin+1)*(yMax-yMin+1)) - S.size xs
+        -- (S.size xs -) . S.size . S.intersection xs . S.fromList $ V2 <$> [xMin .. xMax] <*> [yMin .. yMax]
+-- Returns @'V2' (V2 xMin yMin) (V2 xMax yMax)@.
+-- -- | A version of 'boundingBox' that works for normal possibly-empty lists.
+-- boundingBox' :: (Foldable f, Applicative g, Ord a) => f (g a) -> Maybe (V2 (g a))
+-- boundingBox' = fmap boundingBox . NE.nonEmpty . toList
+
+    -- , sSolve = \xs -> Just $ scanl step xs [0..9]
+    , sSolve = \xs -> Just $ foldl' step xs [0..9]
     }
 
 day23b :: _ :~> _
 day23b = MkSol
     { sParse = sParse day23a
     , sShow  = show
-    , sSolve = Just
+    , sSolve = \xs -> fmap fst . firstRepeatedBy snd . zip [0..] $ scanl step xs [0..]
     }
+
+-- firstRepeatedBy :: Ord a => (b -> a) -> [b] -> Maybe b
+
+-- -- | Lazily find the first repeated item.
+-- firstRepeated :: Ord a => [a] -> Maybe a
+-- firstRepeated = firstRepeatedBy id
