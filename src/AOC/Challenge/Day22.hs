@@ -76,28 +76,21 @@ parseInput :: String -> Maybe (Map Point Tile, [Step])
 parseInput = bitraverse (pure . parseAsciiMap identChar) identStep
          <=< listTup . splitOn "\n\n"
 
-data MoveState = MS { pos :: Point, dir :: Dir }
+data MoveState = MS { pos :: !Point, dir :: !Dir }
   deriving stock (Show, Eq, Ord)
 
-step :: Map Point Tile -> MoveState -> Step -> MoveState
-step mp (MS p d) = \case
+step :: (MoveState -> MoveState) -> Map Point Tile -> MoveState -> Step -> MoveState
+step wrapper mp (MS p d) = \case
     Turn e    -> MS p (d <> e)
-    Forward n -> MS (stepStraight n p) d
+    Forward n -> stepStraight n (MS p d)
   where
-    stepStraight !n q
-        | n <= 0    = q
-        | otherwise = case mp M.! nextStep of
+    stepStraight !n (MS q e)
+        | n <= 0    = MS q e
+        | otherwise = case mp M.! q' of
             Floor -> stepStraight (n-1) nextStep
-            Wall  -> q
+            Wall  -> MS q e
       where
-        nextStep = wrap (q + dirPoint d)
-    wrap q@(V2 x y)
-      | q `M.member` mp = q
-      | otherwise       = case d of
-          North -> V2 x (minimum [ y' | V2 x' y' <- M.keys mp, x' == x ])
-          South -> V2 x (maximum [ y' | V2 x' y' <- M.keys mp, x' == x ])
-          West  -> V2 (maximum [ x' | V2 x' y' <- M.keys mp, y' == y ]) y
-          East  -> V2 (minimum [ x' | V2 x' y' <- M.keys mp, y' == y ]) y
+        nextStep@(MS q' _) = wrapper $ MS (q + dirPoint d) d
 
 score :: MoveState -> Int
 score (MS (V2 x y) d) = 1000 * (y+1) + 4 * (x+1) + dp
@@ -108,20 +101,36 @@ score (MS (V2 x y) d) = 1000 * (y+1) + 4 * (x+1) + dp
       West -> 2
       North -> 1
 
-day22a :: _ :~> _
+solve
+    :: (MoveState -> MoveState)
+    -> Map Point Tile
+    -> [Step]
+    -> MoveState
+solve wrapper mp = foldl' (step wrapper mp) s0
+  where
+    x0 = minimum [ x | V2 x y <- M.keys mp , y == 0 ]
+    s0 = MS (V2 x0 0) East
+
+day22a :: (Map Point Tile, [Step]) :~> MoveState
 day22a = MkSol
     { sParse = parseInput
     , sShow  = show . score
-    , sSolve = \(mp, xs) ->
-        let x0 = minimum [ x | V2 x y <- M.keys mp , y == 0 ]
-            s0 = MS (V2 x0 0) East
-        in  Just $ foldl' (step mp) s0 xs
+    , sSolve = \(mp, xs) -> Just $ solve (wrapper mp) mp xs
     }
+  where
+    wrapper mp (MS q@(V2 x y) e)
+      | q `M.member` mp = MS q e
+      | otherwise       = (`MS` e) case e of
+          North -> V2 x (minimum [ y' | V2 x' y' <- M.keys mp, x' == x ])
+          South -> V2 x (maximum [ y' | V2 x' y' <- M.keys mp, x' == x ])
+          West  -> V2 (maximum [ x' | V2 x' y' <- M.keys mp, y' == y ]) y
+          East  -> V2 (minimum [ x' | V2 x' y' <- M.keys mp, y' == y ]) y
 
-day22b :: _ :~> _
+day22b :: (Map Point Tile, [Step]) :~> MoveState
 day22b = MkSol
-    { sParse = sParse day22a
-    , sShow  = show
-    , sSolve = Just
+    { sParse = parseInput
+    , sShow  = show . score
+    , sSolve = \(mp, xs) -> Just $ solve (wrapper mp) mp xs
     }
-
+  where
+    wrapper mp (MS q@(V2 x y) e) = undefined
