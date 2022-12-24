@@ -29,12 +29,16 @@ module AOC.Challenge.Day24 (
 import           AOC.Prelude
 
 import qualified Data.Graph.Inductive           as G
+import           Data.Finite
 import qualified Data.IntMap                    as IM
 import qualified Data.IntSet                    as IS
 import qualified Data.List.NonEmpty             as NE
+import           GHC.TypeLits
+import           Data.Proxy
 import qualified Data.List.PointedList          as PL
 import qualified Data.List.PointedList.Circular as PLC
 import qualified Data.Map                       as M
+import qualified Data.Map.NonEmpty              as NEM
 import qualified Data.OrdPSQ                    as PSQ
 import qualified Data.Sequence                  as Seq
 import qualified Data.Set                       as S
@@ -45,135 +49,68 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
--- #.########################################################################################################################
--- #<><v<^<vv<><^vv><><v^.^>.^.>.<v^>v><v^.v^<v<vvvv.^^><>^vv<<<>>v>>^>v>>>v<.vv>v<.<v>><>^<<v^<<v^vv>^^<v<^<>v>^v<^v^..^^<<#
--- #<>^<<<^<<vv.<^.^>>>vv.v<<vv^...vvv><><>^<^vv.<v>>v><<^^vvv>v>>^>^<v>^<vv><vv<v^v^.vv<<>vv.^^<>v<<v^>..>v^><v^v<<^^<^.^v<#
--- #>^>>^<v<v^<v.>vv^>vv^<vv.<>>^vv.<^^>v^vv>v<<vv<>><<^>.v^^v>v<<v^.^v>v>.<^^vvv><^v.v.<v>^>v<<^v.<vv>^v^v^^<>.<<<v^^^>^^^<#
--- #>>v>^><^v<.<>>>>^<v>>v^^^><<^v^<>^><>.v<.>^vv<^^<v>.<vv>v^>.v<v<vv.^><^v>><<<v<vvv.v^^>^.^>v^>^><>^<<^>v<<v^v>^v^>><>v.<#
--- #>>vv<^.^<>v<v<^<.>^v^.<>>.v^^^.vv^v.<v<>v.>>>v>>.<<<<v<.^>^v<v^<v^<..^v<v^>^<v<>v<vv>.><<<>^>>>v>>>v^<^v>v^<..v>>>v>^>^>#
--- #>^^v>.^>^<v>^^v>>v<^<<>^>^^>v<.v^<<><v^>>>><>.><>>>vv<^v^v.<v<v>v^>><v><<><>>^v<^^<^v<v^>v^<>.<.^v>vv.v><<v.>.^>.^^^.<.>#
--- #<<v>><.>v<<vv>v.vv<><vv<>^>>>^v<<v>^<<<<v^<>>vv^^v^>.<.^><>v>>v<^v<.v^<^<>v^v^v^>^v^<>v<.>v<^^^.<><v.^^..^v>^>^><.>v>v.>#
--- #<^v>v>^.>>>^vv^<>><>^.<>^^<<<^<><.v>^>.>.vvv><v<<>v^<^^<>^vv<vvv<v<<v<^<<>><v<>vv^v<.^.>^>v<<^<><><<<^<.>.v^^.<>><v^<^<<#
--- #>.<^<v^^><<.v^v<>v<^vv>>vv>^>^<.>>^v<vv.>.v<>>v<^^<><^^^v.<.v>>^.v^^^>>v^<>.<v^v^.^^v^vv.>>>^^v^..<^v..<.v<>v^<vv.^>^>v>#
--- #>v^^v>^<v>>vv^v^>.<><>v^^v.^^>.<<.>^<^<v^.^<><v.v<<^^^^<v^v>.^v^<.v^<<^^.><>.<v.v<^^>^^>>>^v^^..vv<v><>^>.><v^^..^^<.<..#
--- #<^<.v>>vv>v<<v<^<>>v^<v>.v^<>vvv..<^>>v>v^v^<^><^<^^v>v>.>vv>^^^>><.<<>^^>.>.>v><^<^v^^<vv<>>^^v<<v>.^.v.<v.^.^v<<^>^<>>#
--- #<.^v>^>.>^^>^>^<>>>.>^^^vv^v<>v.<^vv.vv^>>>^^v>^>v>>vvv^><v.<^><<>^^.v.vv>>vv>^vv<<<^..v<^><<<>>^<<v^<^<<.>^^<><<^^<vv^>#
--- #<^><>>>>^.^^v>v>^^.^<>><.<><v<<^>v><^^>><^^v>^>^^><^^>^v^<<><<.v^v>>>vvv^v>v^.^>.>v^vv>>>v^>^^.>>.>>vvv<^<<vvvv<^>><v^v<#
--- #<v^<<>^^v<^^<v^<^v><>..^<^>v^^<^<v>v.>>v>><><>v^>^v<vv^v^vv<.^^>>.<<^v>^^<>><<^>v^<^>v>^<>>>v>^.^<.^.^<v>vv.^v>v<vvv^^^<#
--- #<>v<v^^v^v<<<v^^><v<>v<^<>v^v<^^>^<v<v^.>^<vv^>^^<>v<>>>.v^v.<<<<.v^v>^<>><.v<>^.<>^.^vv<>.^<v.^v<^>>>^<^v^<.<>>v>^.>>^>#
--- #>>^>>vv.>v^v>>.vv>^<^v^>>^^<<<>v<>>><^.<^>^<>^.>>.<^^.^<.v<^vv>><<..<<.<v^>^^<>.>.<>><>>v^>.v.^^>^vv<<^^v>v^>vv>^<^v.v>>#
--- #<v.<v^^^<^><<^>v^><<v.^v^^>vv><vvv>^^^<v>^>vv<^^^>.>><<^<^v<>.v><^><>v<<.<^vv>.^^^<v>v>>>v<^.v^>>>^>^<<..v.>vv.>>v>^<^^>#
--- #<vvv>^^<<vv.v><^..>v.<v<v<<<v^>v<<>.><v<>.<vv^><^<<^v^..>v<v^v>>>^>><v.>>^<>v<^^.vv>>v>.v^^^><^<>>>^<<<<<...v><v>v><^<v<#
--- #>v^>v^<v>>><<^v>>>v^<^v.^.v^v.<^<^>.<<.<<.^^vv<v>v>><^^.><>v.>>..^.<vv><>.v>.^^>^vvv>.v>.<.^<v<>^><^v<>>>.<^^v<<>>>>^v>.#
--- #<>^>.v^<<><.v^<^<.>^>..<<vv^v<>>v>vv.<><<>^>><^^<v.<v<^<v^>vv^^<>vv>^<^^<v^.>^<^>v<v><^v>v^<^.v^<<>v>.>vv^^v^>vv>^.v><^<#
--- #<>>^.v><^v>^><>v><>.v>vv>^v^^v>.^..>^<^<vv^vv>v<<<v<<v<>.<.>>^^v<^<>v>^<^<v.>^<v.^<^^vvv>.<>^><^v.^>>v<v>^^.^^v>v>vv<<<>#
--- #.>>^^>v.v^>v^^>vv<vv<v.vv>.vv<<<<^^<v.<v><vv.v<^<^v<.>..^>v^<^^.<>v^<v..^^<^v^^>^<^.v>v<^^>vvvvv.>>>^vv^^^<>.v>v^..>v^.>#
--- #>^>v^.^vv^v.vv>v.>v^<><^<>v^<^v><.v<^v>^v>.v<v>^vvvvv>.<vv>>^^<^^^<.<>v>.<>>.v<^<v<^.v.<><>v^v^^^v^>^^.^^<><><<<v^^<<^v<#
--- #<>>v.<<v<^<^<^.vv>>>>>v^..<><<v^>^^.>>^<.<>^v^<^>v<.vv<v<<^vv^.<v<<v^vv<<.v<>^v^<^v<^vv>>><v>vvv><><><.><v>^><<.>><<>^^.#
--- #.<^v><>v>^v^v^><^^.v<<>^<^<>v..^>vv>vvvv<<vv>>>><v<^<^v^>v>^<>^^v.>>v>^.v^vvv<><v^.><<vv.>^.^v<>>v.<vv>^<^>>>v^>><v.>>><#
--- ########################################################################################################################.#
-
+parseChar :: Char -> Maybe Dir
 parseChar '>' = Just East
 parseChar '<' = Just West
 parseChar '^' = Just South
 parseChar 'v' = Just North
-parseChar _ = Nothing
+parseChar _   = Nothing
 
-data MapState = MS
-    { blizz :: !Int
-    , pos   :: !Point
+data MapState n = MS
+    { time :: !Int
+    , leg  :: !(Maybe (Finite n))  -- ^ Just n is on leg #n, Nothing is done
+    , pos  :: !Point
     }
   deriving stock (Eq, Show, Ord, Generic)
 
-instance NFData MapState
+instance NFData (MapState n)
 
-day24a :: _ :~> _
-day24a = MkSol
-    { sParse = Just . parseAsciiMap parseChar
-    , sShow  = show . fst
-    , sSolve = \(M.mapKeys (subtract 1)->bmap) ->
-        let Just (V2 _ maxes) = boundingBox' $ M.keys bmap
-            goal = maxes + V2 0 1
-            stepBs = zipWith (\d p ->
-                        mod <$> (p + dirPoint d) <*> (maxes+1)
-                    ) dirs
-            cycleLength = product $ maxes + 1
-            bHist = Seq.fromList . map S.fromList . take cycleLength $ iterate stepBs (M.keys bmap)
-            dirs = toList bmap
-            outerEdge = S.delete goal $ S.delete (V2 0 (-1)) $ S.fromList
-                [ V2 x y
-                | x <- [-2 .. view _x maxes+2]
-                , y <- [-2 .. view _y maxes+2]
-                , x < 0 || y < 0 || x > view _x maxes || y > view _y maxes
-                ]
-            expander (MS t p) = M.fromList
-                [ (MS (t+1) p', 1)
-                | p' <- S.toList cands
-                ]
-              where
-                bs = bHist `Seq.index` ((t+1) `mod` cycleLength)
-                cands = (S.fromList (p:cardinalNeighbs p) `S.difference` outerEdge) `S.difference` bs
-        in  aStar
-              (\(MS _ p) -> sum $ abs <$> (p - goal))
-              expander
-              (MS 0 (V2 0 (-1)))
-              ((== goal) . pos)
-    }
-
-data Leg = LFirst | LSecond | LThird
-  deriving stock (Eq, Show, Ord, Generic)
-
-instance NFData Leg
-
-data MapState2 = MS2
-    { time2 :: !Int
-    , leg2  :: !Leg
-    , pos2  :: !Point
-    }
-  deriving stock (Eq, Show, Ord, Generic)
-
-instance NFData MapState2
-
-day24b :: _ :~> _
-day24b = MkSol
-    { sParse = Just . parseAsciiMap parseChar
-    , sShow  = show . fst
-    , sSolve = \(M.mapKeys (subtract 1)->bmap) ->
-        let Just (V2 _ maxes) = boundingBox' $ M.keys bmap
-            goal = maxes + V2 0 1
-            origin = V2 0 (-1)
-            stepBs = zipWith (\d p ->
-                        mod <$> (p + dirPoint d) <*> (maxes+1)
-                    ) dirs
-            cycleLength = product $ maxes + 1
-            bHist = Seq.fromList . map S.fromList . take cycleLength $ iterate stepBs (M.keys bmap)
-            dirs = toList bmap
-            outerEdge = S.delete goal $ S.delete origin $ S.fromList
-                [ V2 x y
-                | x <- [-2 .. view _x maxes+2]
-                , y <- [-2 .. view _y maxes+2]
-                , x < 0 || y < 0 || x > view _x maxes || y > view _y maxes
-                ]
-            totalLeg = sum $ abs <$> (goal - origin)
-            heuristic (MS2 _ l p) = case l of
-              LFirst  -> sum (abs <$> (p - goal)) + 2*totalLeg
-              LSecond -> sum (abs <$> (p - origin)) + totalLeg
-              LThird -> sum (abs <$> (p - goal))
-            expander (MS2 t l p) = M.fromList
-                [ (MS2 (t + 1) l' p', 1)
-                | p' <- S.toList cands
-                ]
-              where
-                bs = bHist `Seq.index` ((t+1) `mod` cycleLength)
-                -- bs = stepBs bs
-                cands = (S.fromList (p:cardinalNeighbs p) `S.difference` outerEdge) `S.difference` bs
-                l' = case l of
-                  LFirst | p == goal -> LSecond
-                  LSecond | p == origin -> LThird
-                  _ -> l
-        in  aStar
+-- | Assume corner at (0,0).
+solve :: forall n. KnownNat n => NEMap Point Dir -> Maybe (Int, [MapState n])
+solve bmap = first (subtract 1) <$> aStar
               heuristic
               expander
-              (MS2 0 LFirst origin)
-              (\(MS2 _ l p) -> l == LThird && p == goal)
+              (MS 0 (Just 0) origin)
+              (\(MS _ l _) -> isNothing l)
+  where
+    V2 _ maxes  = boundingBox $ NEM.keys bmap
+    cyclePeriod = product (maxes + 1)
+    goal     = maxes + V2 0 1
+    origin   = V2 0 (-1)
+    stepBs   = zipWith (\d p -> mod <$> (p + dirPoint d) <*> (maxes + 1))
+                       (toList bmap)
+    bHist    = Seq.fromList . map S.fromList . take cyclePeriod
+             $ iterate stepBs (toList (NEM.keys bmap))
+    validPos = S.insert goal . S.insert origin . S.fromList $
+                  sequence $ enumFromTo <$> 0 <*> maxes
+    totalLegDist = mannDist goal origin
+    destForLeg l
+      | even (getFinite l) = goal
+      | otherwise          = origin
+    heuristic = \case
+      MS _ Nothing  _ -> 0
+      MS _ (Just l) p ->
+        let legsLeft = fromInteger (natVal (Proxy @n)  - getFinite l)
+        in  mannDist p (destForLeg l) + legsLeft * totalLegDist
+    expander = \case
+      MS _ Nothing _ -> M.empty
+      MS t (Just l) p ->
+        let bs = bHist `Seq.index` ((t+1) `mod` cyclePeriod)
+            cands = (S.fromList (p:cardinalNeighbs p) `S.intersection` validPos) `S.difference` bs
+            l'   | p == destForLeg l = strengthen (shift l)
+                 | otherwise      = Just l
+        in  M.fromList [ (MS (t + 1) l' p', 1) | p' <- S.toList cands ]
+
+
+day24 :: forall n. KnownNat n => NEMap Point Dir :~> Int
+day24 = MkSol
+    { sParse = NEM.nonEmptyMap . parseAsciiMap parseChar
+    , sShow  = show
+    , sSolve = fmap fst . solve @n . NEM.mapKeys (subtract 1)
     }
+
+day24a :: NEMap Point Dir :~> Int
+day24a = day24 @1
+
+day24b :: NEMap Point Dir :~> Int
+day24b = day24 @3
