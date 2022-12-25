@@ -22,8 +22,8 @@
 --     will recommend what should go in place of the underscores.
 
 module AOC.Challenge.Day25 (
-    -- day25a
-  -- , day25b
+    day25a
+  , decToSnafu
   ) where
 
 import           AOC.Prelude
@@ -45,16 +45,36 @@ import qualified Text.Megaparsec                as P
 import qualified Text.Megaparsec.Char           as P
 import qualified Text.Megaparsec.Char.Lexer     as PP
 
+snafuToDec :: [Char] -> Int
+snafuToDec = sum . map go . zip [0..] . reverse
+  where
+    go (i, c) = case c of
+        '1' -> j
+        '2' -> 2*j
+        '-' -> -j
+        '=' -> -2*j
+        '0' -> 0
+        _    -> undefined
+      where
+        j = 5^(i::Int)
+
+decToSnafu :: Int -> [Char]
+decToSnafu = reverse . unfoldr go
+  where
+    go i = case i `divMod` 5 of
+      (0,j) | j <= 0 -> Nothing
+      (j,0) -> Just ('0', j)
+      (j,1) -> Just ('1', j)
+      (j,2) -> Just ('2', j)
+      (j,3) -> Just ('=', j+1)
+      (j,4) -> Just ('-', j+1)
+      _     -> Nothing
+
 day25a :: _ :~> _
 day25a = MkSol
     { sParse = Just . lines
-    , sShow  = show
-    , sSolve = Just
+    , sShow  = id
+    , sSolve = Just . decToSnafu . sum . map snafuToDec
     }
 
-day25b :: _ :~> _
-day25b = MkSol
-    { sParse = sParse day25a
-    , sShow  = show
-    , sSolve = Just
-    }
+-- 1=-=2--12==000=00-
