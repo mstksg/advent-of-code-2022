@@ -33,7 +33,6 @@ common common-options
                      , comonad
                      , conduino
                      , constraints
-                     , strict-tuple
                      , constraints-extras
                      , containers
                      , criterion
@@ -62,6 +61,7 @@ common common-options
                      , linear
                      , megaparsec
                      , microlens-th
+                     , monoidal-containers
                      , mtl
                      , nonempty-containers
                      , pandoc
@@ -74,6 +74,7 @@ common common-options
                      , safe
                      , semigroupoids
                      , split
+                     , strict-tuple
                      , strict-tuple
                      , tagsoup
                      , template-haskell
