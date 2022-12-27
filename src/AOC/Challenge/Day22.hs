@@ -88,18 +88,18 @@ data MoveState = MS { pos :: !Point, dir :: !Dir }
 
 step :: (MoveState -> MoveState) -> Map Point Tile -> MoveState -> Step -> MoveState
 step wrapper mp (MS p d) = \case
-    Turn e    -> MS p (d <> e)
-    Forward n -> stepStraight n (MS p d)
+    Turn e    -> traceShowId $ MS p (d <> e)
+    Forward n -> traceShowId $ stepStraight n (MS p d)
   where
     stepStraight 0 ms = ms
-    stepStraight !n ms@(MS q _)
+    stepStraight !n ms@(MS q d')
         | mp M.! q' == Floor = stepStraight (n-1) nextStep
         | otherwise          = ms
       where
-        tryNextStep = q + dirPoint d
+        tryNextStep = q + dirPoint d'
         nextStep@(MS q' _)
-          | tryNextStep `M.member` mp = MS tryNextStep d
-          | otherwise                 = wrapper (MS tryNextStep d)
+          | tryNextStep `M.member` mp = MS tryNextStep d'
+          | otherwise                 = wrapper (MS tryNextStep d')
 
 
 score :: MoveState -> Int
@@ -140,7 +140,7 @@ day22b = MkSol
     -- , sShow  = show
     , sShow  = show . score
     -- , sSolve = \(g, _, _) -> Just g
-    , sSolve = \(g, mp, xs) -> Just $ solve (wrapper g mp) mp xs
+    , sSolve = \(g, mp, xs) -> traceShow g . traceShow "hi" . traceShow g $ Just $ solve (wrapper g mp) mp xs
     }
   where
     wrapper g mp = traceShowId . fromJust . stepForwardFrom g (M.keysSet mp) 1 . stepBack
@@ -329,18 +329,18 @@ testSteps4 = parseAsciiSet (/= ' ') . unlines $
 --       %%%%%%############
 --       %%%%%%###q#######a
 --       %%%%%%############
---       %%%%%%......      
---       %%%%%%......      
---       %%%%%%......      
---       %%%%%%......      
---       %%%%%%......      
---       %%%%r%...... A    
--- ..................      
--- ...............x..abcde 
+--       %%%%%%......
+--       %%%%%%......
+--       %%%%%%......
+--       %%%%%%......
+--       %%%%%%......
+--       %%%%r%...... A
+-- ..................
+-- ...............x..abcde
 -- ...............y..fghij
--- ..................      
--- ..................      
--- ..................      
+-- ..................
+-- ..................
+-- ..................
 --             .........FA.
 --             .........GB.
 --             .........HC.
