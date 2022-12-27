@@ -22,6 +22,7 @@ module AOC.Common.Point (
   , dirPoint
   , dirPoint'
   , rotPoint
+  , rotPoint'
   , rotFin
   , mulDir
   , allDir
@@ -263,6 +264,13 @@ rotPoint = \case
     East  -> \(V2 x y) -> V2   y  (-x)
     West  -> \(V2 x y) -> V2 (-y)   x
     South -> negate
+
+rotPoint' :: Num a => Dir -> V2 a -> V2 a
+rotPoint' = \case
+    North -> id
+    East  -> \(V2 x y) -> V2   y  (-x+1)
+    West  -> \(V2 x y) -> V2 (-y+1)   x
+    South -> \(V2 x y) -> V2 (-y+1) (-x+1)
 
 -- | Rotate a point by a direction
 rotFin :: KnownNat n => Dir -> FinPoint n -> FinPoint n

@@ -52,10 +52,10 @@ solve n bmap = flip evalStateT (MS 0 origin) $
         aStar (mannDist dest . pos) expander ms ((== dest) . pos)
     V2 _ maxes  = boundingBox $ NEM.keys bmap
     cyclePeriod = product (maxes + 1)
-    goal     = maxes + V2 0 1
-    origin   = V2 0 (-1)
-    bHist    = Seq.fromList . map S.fromList . take cyclePeriod
-             $ iterate stepBs (toList (NEM.keys bmap))
+    goal   = maxes + V2 0 1
+    origin = V2 0 (-1)
+    bHist  = Seq.fromList . map S.fromList . take cyclePeriod
+           $ iterate stepBs (toList (NEM.keys bmap))
       where
         stepBs = zipWith (\d p -> mod <$> (p + dirPoint d) <*> (maxes + 1))
                          (toList bmap)
