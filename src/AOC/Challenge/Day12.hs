@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 -- |
 -- Module      : AOC.Challenge.Day12
 -- License     : BSD3
@@ -9,55 +6,90 @@
 -- Portability : non-portable
 --
 -- Day 12.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 module AOC.Challenge.Day12
-  (
+  ( day12a
+  , day12b
   )
 where
 
--- day12a
--- , day12b
-
-import AOC.Prelude
-import qualified Data.Graph.Inductive as G
-import qualified Data.IntMap as IM
-import qualified Data.IntSet as IS
-import qualified Data.List.NonEmpty as NE
-import qualified Data.List.PointedList as PL
-import qualified Data.List.PointedList.Circular as PLC
+import AOC.Common (charFinite)
+import AOC.Common.Point (Point, cardinalNeighbsSet, mannDist, parseAsciiMap)
+import AOC.Common.Search (aStar)
+import AOC.Solver ((:~>) (..))
+import Data.Finite (Finite, shift, strengthen)
+import Data.Foldable (fold)
+import Data.Map (Map)
 import qualified Data.Map as M
-import qualified Data.OrdPSQ as PSQ
-import qualified Data.Sequence as Seq
 import qualified Data.Set as S
-import qualified Data.Text as T
-import qualified Data.Vector as V
-import qualified Linear as L
-import qualified Text.Megaparsec as P
-import qualified Text.Megaparsec.Char as P
-import qualified Text.Megaparsec.Char.Lexer as PP
 
-day12a :: _ :~> _
+data Tile = Start | Terrain (Finite 26) | End
+  deriving stock (Show, Eq, Ord)
+
+parseChar :: Char -> Maybe Tile
+parseChar 'S' = Just Start
+parseChar 'E' = Just End
+parseChar c = Terrain . snd <$> charFinite c
+
+day12a :: Map Point Tile :~> Int
 day12a =
   MkSol
-    { sParse = Just . lines
+    { sParse = Just . parseAsciiMap parseChar
     , sShow = show
-    , sSolve = Just
+    , sSolve = \heightMap -> do
+        let reverseMap =
+              M.fromListWith
+                (<>)
+                [ (t, S.singleton p)
+                | (p, t) <- M.toList heightMap
+                ]
+        sPos <- S.lookupMin =<< M.lookup Start reverseMap
+        ePos <- S.lookupMin =<< M.lookup End reverseMap
+        let expand p = neighbs `S.intersection` limiter
+              where
+                neighbs = cardinalNeighbsSet p
+                limiter = fold . M.restrictKeys reverseMap . S.fromList $ case heightMap M.! p of
+                  Start -> [Start, Terrain 0]
+                  Terrain i ->
+                    Start :
+                    maybe End Terrain (strengthen (shift i)) :
+                    (Terrain <$> [0 .. i])
+                  End -> []
+        fst
+          <$> aStar
+            (mannDist ePos)
+            (M.fromSet (const 1) . expand)
+            sPos
+            (== ePos)
     }
 
-day12b :: _ :~> _
+day12b :: Map Point Tile :~> Int
 day12b =
   MkSol
-    { sParse = sParse day12a
+    { sParse = Just . parseAsciiMap parseChar
     , sShow = show
-    , sSolve = Just
+    , sSolve = \heightMap -> do
+        let reverseMap =
+              M.fromListWith
+                (<>)
+                [ (t, S.singleton p)
+                | (p, t) <- M.toList heightMap
+                ]
+        ePos <- S.lookupMin =<< M.lookup End reverseMap
+        let expand Nothing = fold $ M.restrictKeys reverseMap (S.fromList [Start, Terrain 0])
+            expand (Just p) = neighbs `S.intersection` limiter
+              where
+                neighbs = cardinalNeighbsSet p
+                limiter = fold . M.restrictKeys reverseMap . S.fromList $ case heightMap M.! p of
+                  Start -> [Start, Terrain 0]
+                  Terrain i ->
+                    Start :
+                    maybe End Terrain (strengthen (shift i)) :
+                    (Terrain <$> [0 .. i])
+                  End -> []
+        subtract 1 . fst
+          <$> aStar
+            (maybe maxBound (mannDist ePos))
+            (M.fromSet (const 1) . S.map Just . expand)
+            Nothing
+            (== Just ePos)
     }
