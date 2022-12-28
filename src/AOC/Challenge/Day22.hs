@@ -20,16 +20,18 @@ import           Control.Monad ((<=<))
 import           Control.Monad.Trans.State (StateT(..), evalStateT)
 import           Data.Bitraversable (bitraverse)
 import           Data.Char (isDigit, isSpace)
+import           Data.Coerce (coerce)
 import           Data.List (foldl', uncons)
 import           Data.List.Split (splitOn)
 import           Data.Map (Map)
-import           Data.Profunctor (dimap)
+import           Data.Semigroup (Min(..), Max(..))
 import           Data.Set (Set)
-import           Linear (V2(..), V4(..), (*^))
+import           Data.Tuple.Strict (T2(..), sfst, ssnd)
+import           Linear (V2(..), (*^))
 import           Safe (minimumMay)
 import           Text.Read (readMaybe)
-import qualified Control.Foldl as F
 import qualified Data.Map as M
+import qualified Data.Map.Monoidal as MM
 import qualified Data.Set as S
 
 data Tile = Floor | Wall
@@ -111,19 +113,17 @@ day22a = day22 stepper
   where
     stepper _ pts = go
       where
-        -- wait this makes no sense lol
-        V4 nCache eCache sCache wCache = flip F.fold pts . sequenceA $ V4
-          (dimap (\(V2 x y) -> (x, y)) (M.fromListWith min) F.list)
-          (dimap (\(V2 x y) -> (y, x)) (M.fromListWith min) F.list)
-          (dimap (\(V2 x y) -> (x, y)) (M.fromListWith max) F.list)
-          (dimap (\(V2 x y) -> (y, x)) (M.fromListWith max) F.list)
+        xCache, yCache :: Map Int (T2 Int Int)
+        T2 xCache yCache = coerce $ flip foldMap pts \(V2 x y) ->
+          T2 (MM.singleton x (T2 (Min y) (Max y)))
+             (MM.singleton y (T2 (Min x) (Max x)))
         go (MS p d)
             | naiveStep `S.member` pts = MS naiveStep d
             | otherwise                = case d of
-                North -> MS (V2 x (nCache M.! x)) d
-                East  -> MS (V2 (eCache M.! y) y) d
-                South -> MS (V2 x (sCache M.! x)) d
-                West  -> MS (V2 (wCache M.! y) y) d
+                North -> MS (V2 x (sfst $ xCache M.! x)) d
+                East  -> MS (V2 (sfst $ yCache M.! y) y) d
+                South -> MS (V2 x (ssnd $ xCache M.! x)) d
+                West  -> MS (V2 (ssnd $ yCache M.! y) y) d
           where
             naiveStep@(V2 x y) = p + dirPoint d
 
