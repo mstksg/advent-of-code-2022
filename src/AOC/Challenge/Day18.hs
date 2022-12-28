@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 -- |
 -- Module      : AOC.Challenge.Day18
 -- License     : BSD3
@@ -9,55 +6,54 @@
 -- Portability : non-portable
 --
 -- Day 18.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 module AOC.Challenge.Day18
-  (
+  ( day18a
+  , day18b
   )
 where
 
--- day18a
--- , day18b
-
-import AOC.Prelude
-import qualified Data.Graph.Inductive as G
-import qualified Data.IntMap as IM
-import qualified Data.IntSet as IS
-import qualified Data.List.NonEmpty as NE
-import qualified Data.List.PointedList as PL
-import qualified Data.List.PointedList.Circular as PLC
-import qualified Data.Map as M
-import qualified Data.OrdPSQ as PSQ
-import qualified Data.Sequence as Seq
+import AOC.Common (countTrue, floodFill, listV3, perturbations)
+import AOC.Common.Point (boundingBox')
+import AOC.Solver ((:~>) (..))
+import Control.Monad ((<=<))
+import Data.Functor ((<&>))
+import Data.List.Split (splitOn)
 import qualified Data.Set as S
-import qualified Data.Text as T
-import qualified Data.Vector as V
-import qualified Linear as L
-import qualified Text.Megaparsec as P
-import qualified Text.Megaparsec.Char as P
-import qualified Text.Megaparsec.Char.Lexer as PP
+import Linear (V2 (..), V3 (..))
+import Text.Read (readMaybe)
 
-day18a :: _ :~> _
+cardinalNeighbs3 :: V3 Int -> [V3 Int]
+cardinalNeighbs3 = perturbations \i -> [i -1, i + 1]
+
+parseLine :: String -> Maybe (V3 Int)
+parseLine = traverse readMaybe <=< listV3 . splitOn ","
+
+day18a :: [V3 Int] :~> Int
 day18a =
   MkSol
-    { sParse = Just . lines
+    { sParse = traverse parseLine . lines
     , sShow = show
-    , sSolve = Just
+    , sSolve = \pts ->
+        Just
+          let ptsSet = S.fromList pts
+           in countTrue (`S.notMember` ptsSet) $ concatMap cardinalNeighbs3 pts
     }
 
-day18b :: _ :~> _
+day18b :: [V3 Int] :~> Int
 day18b =
   MkSol
-    { sParse = sParse day18a
+    { sParse = traverse parseLine . lines
     , sShow = show
-    , sSolve = Just
+    , sSolve = \pts ->
+        boundingBox' pts <&> \(V2 mins maxs) ->
+          let ptsSet = S.fromList pts
+              outerRegions = flip floodFill (S.fromList [mins - 1, maxs + 1]) \p ->
+                S.fromList
+                  [ q
+                  | q <- cardinalNeighbs3 p
+                  , and $ (>=) <$> q <*> (mins - 1)
+                  , and $ (<=) <$> q <*> (maxs + 1)
+                  , q `S.notMember` ptsSet
+                  ]
+           in countTrue (`S.member` outerRegions) $ concatMap cardinalNeighbs3 pts
     }
