@@ -36,6 +36,9 @@ module AOC.Common (
   , firstRepeatedBy
   , firstRepeatedFinitary
   , firstRepeatedByFinitary
+  , findLoopBy
+  , skipConsecutive
+  , skipConsecutiveBy
   , fixedPoint
   , floodFill
   , floodFillCount
@@ -324,6 +327,27 @@ firstRepeatedByFinitary f xs = runST do
     pure case res of
       Left x  -> Just x
       Right _ -> Nothing
+
+-- | Find a "loop", where applying a function repeatedly creates a closed loop
+findLoopBy :: Ord a => (b -> a) -> [b] -> Maybe (V2 (Int, b))
+findLoopBy f = go 0 M.empty
+  where
+    go !i seen (x:xs) = case M.lookup (f x) seen of
+      Nothing -> go (i+1) (M.insert (f x) (i,x) seen) xs
+      Just (j,y)  -> Just (V2 (j, y) (i, x))
+    go _ _ []     = Nothing
+
+skipConsecutive :: Eq a => [a] -> [a]
+skipConsecutive = skipConsecutiveBy id
+
+skipConsecutiveBy :: Eq b => (a -> b) -> [a] -> [a]
+skipConsecutiveBy _ [] = []
+skipConsecutiveBy f (x:xs) = x:go x xs
+  where
+    go _ [] = []
+    go y (z:zs)
+      | f y == f z = go y zs
+      | otherwise  = z : go z zs
 
 -- | Repeat a function until you get the same result twice.
 fixedPoint :: Eq a => (a -> a) -> a -> a

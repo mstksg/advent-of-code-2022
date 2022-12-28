@@ -33,6 +33,7 @@ common common-options
                      , comonad
                      , conduino
                      , constraints
+                     , data-fix
                      , constraints-extras
                      , containers
                      , criterion
