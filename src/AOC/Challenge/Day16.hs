@@ -1,6 +1,4 @@
 {-# LANGUAGE TypeApplications #-}
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 -- |
 -- Module      : AOC.Challenge.Day16
@@ -10,40 +8,29 @@
 -- Portability : non-portable
 --
 -- Day 16.  See "AOC.Solver" for the types used in this module!
---
--- After completing the challenge, it is recommended to:
---
--- *   Replace "AOC.Prelude" imports to specific modules (with explicit
---     imports) for readability.
--- *   Remove the @-Wno-unused-imports@ and @-Wno-unused-top-binds@
---     pragmas.
--- *   Replace the partial type signatures underscores in the solution
---     types @_ :~> _@ with the actual types of inputs and outputs of the
---     solution.  You can delete the type signatures completely and GHC
---     will recommend what should go in place of the underscores.
 module AOC.Challenge.Day16
   ( day16a
   , day16b
   )
 where
 
-import AOC.Prelude
-import qualified Data.Graph.Inductive as G
-import qualified Data.IntMap as IM
-import qualified Data.IntSet as IS
-import qualified Data.List.NonEmpty as NE
-import qualified Data.List.PointedList as PL
-import qualified Data.List.PointedList.Circular as PLC
+import AOC.Common (clearOut)
+import AOC.Common.Search (aStar)
+import AOC.Solver ((:~>) (..))
+import Control.Applicative ((<|>))
+import Control.DeepSeq (NFData)
+import Control.Monad (guard)
+import Data.Bifunctor (first)
+import Data.Char (isDigit, isUpper)
+import Data.Foldable (toList)
+import Data.List (uncons)
+import Data.Map (Map)
 import qualified Data.Map as M
-import qualified Data.OrdPSQ as PSQ
-import qualified Data.Sequence as Seq
+import Data.Set (Set)
 import qualified Data.Set as S
-import qualified Data.Text as T
-import qualified Data.Vector as V
-import qualified Linear as L
-import qualified Text.Megaparsec as P
-import qualified Text.Megaparsec.Char as P
-import qualified Text.Megaparsec.Char.Lexer as PP
+import GHC.Generics (Generic)
+import Linear (V1 (..), V2 (..))
+import Text.Read (readMaybe)
 
 parseLine :: String -> Maybe (String, (Int, Set String))
 parseLine xs = do
@@ -73,8 +60,8 @@ searchPuzzle
   -> Map String (Int, Set String)
   -> Maybe (Int, [PuzzState f])
 searchPuzzle maxTime mp =
-  fmap (first reCost) $
-    aStar
+  first reCost
+    <$> aStar
       (oneTickCost . opened)
       expand
       (PuzzState 1 (pure "AA") S.empty)
@@ -88,8 +75,7 @@ searchPuzzle maxTime mp =
     expand (PuzzState t ps o) =
       M.fromList
         [ (PuzzState (t + 1) newPos (S.unions newSeen), oneTickCost o)
-        | -- it's always traverse
-        newPosSeen <- traverse go ps
+        | newPosSeen <- traverse go ps -- it's always traverse
         , let newPos = fst <$> newPosSeen
               newSeen = snd <$> newPosSeen
         ]
