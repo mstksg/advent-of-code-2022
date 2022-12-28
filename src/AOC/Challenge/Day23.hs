@@ -6,39 +6,42 @@
 -- Portability : non-portable
 --
 -- Day 23.  See "AOC.Solver" for the types used in this module!
-
-module AOC.Challenge.Day23 (
-    day23a
+module AOC.Challenge.Day23
+  ( day23a
   , day23b
-  ) where
+  )
+where
 
-import           AOC.Common (freqs, slidingPairs)
-import           AOC.Common.Point (Point, Dir(..), parseAsciiSet, boundingBox, fullNeighbsSet, rotPoint, dirPoint)
-import           AOC.Solver ((:~>)(..))
-import           Control.Monad (guard)
-import           Data.Foldable (asum, toList)
-import           Data.List (findIndex, scanl', foldl')
-import           Data.Set (Set)
-import           Data.Set.NonEmpty (NESet)
-import           Linear.V2 (V2(..))
+import AOC.Common (freqs, slidingPairs)
+import AOC.Common.Point (Dir (..), Point, boundingBox, dirPoint, fullNeighbsSet, parseAsciiSet, rotPoint)
+import AOC.Solver ((:~>) (..))
+import Control.Monad (guard)
+import Data.Foldable (asum, toList)
+import Data.List (findIndex, foldl', scanl')
 import qualified Data.Map as M
+import Data.Set (Set)
 import qualified Data.Set as S
+import Data.Set.NonEmpty (NESet)
 import qualified Data.Set.NonEmpty as NES
+import Linear.V2 (V2 (..))
 
 step :: Set Point -> Int -> Set Point
-step xs n = S.fromList . toList $ flip M.mapWithKey proposalMap $ \p0 x ->
+step xs n = S.fromList . toList $
+  flip M.mapWithKey proposalMap $ \p0 x ->
     if allProps M.! x > 1
       then p0
       else x
   where
     proposalMap = M.fromSet makeProposal xs
     makeProposal p
-      | allClear  = p
-      | otherwise = maybe 0 ((+ p) . dirPoint) . asum . shift $ [
-            d <$ guard (S.null (neighbs `S.intersection` clearance))
+      | allClear = p
+      | otherwise =
+        maybe 0 ((+ p) . dirPoint) . asum . shift $
+          [ d <$ guard (S.null (neighbs `S.intersection` clearance))
           | d <- [South, North, West, East]
-          , let clearance = S.fromList $
-                  (+ p) . rotPoint d <$> [V2 (-1) 1, V2 0 1, V2 1 1]
+          , let clearance =
+                  S.fromList $
+                    (+ p) . rotPoint d <$> [V2 (-1) 1, V2 0 1, V2 1 1]
           ]
       where
         neighbs = fullNeighbsSet p `S.intersection` xs
@@ -52,17 +55,21 @@ countEmpty xs = product (maxs - mins + 1) - NES.size xs
     V2 mins maxs = boundingBox xs
 
 day23a :: Set Point :~> NESet Point
-day23a = MkSol
+day23a =
+  MkSol
     { sParse = Just . parseAsciiSet (== '#')
-    , sShow  = show . countEmpty
-    , sSolve = \xs -> NES.nonEmptySet $ foldl' step xs [0..9]
+    , sShow = show . countEmpty
+    , sSolve = \xs -> NES.nonEmptySet $ foldl' step xs [0 .. 9]
     }
 
 day23b :: Set Point :~> Int
-day23b = MkSol
+day23b =
+  MkSol
     { sParse = Just . parseAsciiSet (== '#')
-    , sShow  = show
-    , sSolve = \xs -> fmap (+ 1) . findIndex (uncurry (==))
-                    . slidingPairs . scanl' step xs
-                    $ [0..]
+    , sShow = show
+    , sSolve = \xs ->
+        fmap (+ 1) . findIndex (uncurry (==))
+          . slidingPairs
+          . scanl' step xs
+          $ [0 ..]
     }

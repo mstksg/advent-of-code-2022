@@ -6,29 +6,31 @@
 -- Portability : non-portable
 --
 -- Day 1.  See "AOC.Solver" for the types used in this module!
-
-module AOC.Challenge.Day01 (
-    day01a
+module AOC.Challenge.Day01
+  ( day01a
   , day01b
-  ) where
+  )
+where
 
-import           AOC.Solver ((:~>)(..))
-import           Data.List (sort)
-import           Data.List.Split (splitOn)
-import           Safe.Exact (takeExactMay)
-import           Safe.Foldable (maximumMay)
-import           Text.Read (readMaybe)
+import AOC.Solver ((:~>) (..))
+import Data.List (sort)
+import Data.List.Split (splitOn)
+import Safe.Exact (takeExactMay)
+import Safe.Foldable (maximumMay)
+import Text.Read (readMaybe)
 
 day01a :: [[Int]] :~> Int
-day01a = MkSol
+day01a =
+  MkSol
     { sParse = traverse (traverse readMaybe . lines) . splitOn "\n\n"
-    , sShow  = show
+    , sShow = show
     , sSolve = maximumMay . map sum
     }
 
 day01b :: [[Int]] :~> Int
-day01b = MkSol
+day01b =
+  MkSol
     { sParse = sParse day01a
-    , sShow  = show
+    , sShow = show
     , sSolve = fmap sum . takeExactMay 3 . reverse . sort . map sum
     }

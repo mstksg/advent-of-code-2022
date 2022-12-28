@@ -6,26 +6,28 @@
 -- Portability : non-portable
 --
 -- Day 6.  See "AOC.Solver" for the types used in this module!
-
-module AOC.Challenge.Day06 (
-    day06a
+module AOC.Challenge.Day06
+  ( day06a
   , day06b
-  ) where
+  )
+where
 
-import           AOC.Common (firstRepeatedFinitary, slidingWindows, charFinite)
-import           AOC.Solver ((:~>)(..))
-import           Data.Finite (Finite)
-import           Data.Foldable (toList)
-import           Data.List (findIndex)
-import           Data.Maybe (isNothing, mapMaybe)
+import AOC.Common (charFinite, firstRepeatedFinitary, slidingWindows)
+import AOC.Solver ((:~>) (..))
+import Data.Finite (Finite)
+import Data.Foldable (toList)
+import Data.List (findIndex)
+import Data.Maybe (isNothing, mapMaybe)
 
 day06 :: Int -> [Finite 26] :~> Int
-day06 n = MkSol
+day06 n =
+  MkSol
     { sParse = Just . map snd . mapMaybe charFinite
-    , sShow  = show
-    , sSolve = fmap (+ n)
-             . findIndex (isNothing . firstRepeatedFinitary . toList)
-             . slidingWindows n
+    , sShow = show
+    , sSolve =
+        fmap (+ n)
+          . findIndex (isNothing . firstRepeatedFinitary . toList)
+          . slidingWindows n
     }
 
 day06a :: [Finite 26] :~> Int
