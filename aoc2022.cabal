@@ -34,7 +34,7 @@ common common-options
                      , conduino
                      , constraints
                      , data-fix
-                     , constraints-extras
+                     , constraints-extras < 0.4
                      , containers
                      , criterion
                      , data-default-class
